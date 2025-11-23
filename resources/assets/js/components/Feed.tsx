@@ -7,6 +7,7 @@ import RightSidebar from './FeedRightSidebar';
 import PostCard from './PostCard';
 import CreatePostCard from './CreatePostCard';
 import FeedStories from './FeedStories';
+import { Input } from 'antd';
 
 
 interface FeedProps {
@@ -59,6 +60,21 @@ const Feed: React.FC<FeedProps> = ({ currentUser, onLogout }) => {
     useEffect(() => {
         // loadData();
     }, [currentUser]);
+
+    const handlePostFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          setPostError('');
+          try {
+            const processedData = await processFile(file);
+            setNewPostImage(processedData);
+          } catch (err: any) {
+            setPostError(err.message || "Failed to process file");
+          }
+        }
+        // Reset the input
+        e.target.value = '';
+      };
 
     // Utility to compress images
     const processFile = async (file: File): Promise<string> => {
@@ -140,6 +156,15 @@ const Feed: React.FC<FeedProps> = ({ currentUser, onLogout }) => {
 
     return (
         <div className="min-h-screen bg-[#F0F2F5]">
+            {/* Hidden Inputs */}
+            <input
+                type="file"
+                ref={postFileInputRef}
+                className="hidden"
+                accept="image/*,video/*"
+                onChange={handlePostFileSelect}
+            />
+           
 
             <FeedNavbar currentUser={currentUser} onLogout={onLogout} />
 
@@ -182,7 +207,7 @@ const Feed: React.FC<FeedProps> = ({ currentUser, onLogout }) => {
                             </div>
                         ) : (
                             <div className="space-y-6">
-                                {posts.length>0 && posts.map(post => (
+                                {posts.length > 0 && posts.map(post => (
                                     <PostCard
                                         key={post.id}
                                         post={post}
@@ -207,8 +232,8 @@ const Feed: React.FC<FeedProps> = ({ currentUser, onLogout }) => {
 
                 </div>
             </div>
-            </div>
-            );
+        </div>
+    );
 };
 
-            export default Feed;
+export default Feed;
