@@ -57,3 +57,22 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## JWT Authentication Setup
+
+This project uses `tymon/jwt-auth` for API authentication. After pulling the repo or switching branches, run the following locally to enable JWT support and start the app:
+
+```bash
+composer install
+php artisan vendor:publish --provider="Tymon\\JWTAuth\\Providers\\LaravelServiceProvider" --tag=config
+php artisan jwt:secret
+php artisan migrate
+
+npm install
+npm run dev
+```
+
+Usage notes:
+- Login/Register endpoints return a JSON object with a `token` field. The frontend stores this in `localStorage` and sends it as a Bearer token on subsequent requests.
+- API routes that require authentication use the `auth:api` middleware. Send the header `Authorization: Bearer <token>`.
+- If you change the auth guard in `.env`, ensure `config/auth.php` remains consistent.

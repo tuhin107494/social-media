@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import AuthLayout from './authLayouts';
-import { Button, Input } from 'antd';
+import { Button, Input, Form } from 'antd';
 import { User } from '../types';
 import { loginUser } from '../auth';
 import illustration from '../../images/login.png';
@@ -16,17 +16,29 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     setLoading(true);
     
     try {
       const user = await loginUser(email, password);
       onLogin(user);
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      if (err?.errors) {
+        // convert errors object (array of messages) to first-message string per field
+        const mapped: Record<string, string> = {};
+        Object.entries(err.errors).forEach(([k, v]) => {
+          mapped[k] = Array.isArray(v) ? v[0] : (v as string);
+        });
+        setFieldErrors(mapped);
+        setError(err.message || 'Validation error');
+      } else {
+        setError(err?.message || 'Failed to login');
+      }
     } finally {
       setLoading(false);
     }
@@ -49,22 +61,34 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Input
-          placeholder="Email" 
-          type="email" 
-          className='!h-12 !mt-4'
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)}
-          required 
-        />
-        <Input 
-          placeholder="Password" 
-          type="password" 
-          className='!h-12 !mt-4'
-          value={password}
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
+        <Form.Item
+          validateStatus={fieldErrors.email ? 'error' : ''}
+          help={fieldErrors.email}
+          className="!mt-4"
+        >
+          <Input
+            placeholder="Email"
+            type="email"
+            className='!h-12'
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setFieldErrors(prev=>({ ...prev, email: undefined })); }}
+            required
+          />
+        </Form.Item>
+        <Form.Item
+          validateStatus={fieldErrors.password ? 'error' : ''}
+          help={fieldErrors.password}
+          className="!mt-4"
+        >
+          <Input
+            placeholder="Password"
+            type="password"
+            className='!h-12'
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setFieldErrors(prev=>({ ...prev, password: undefined })); }}
+            required
+          />
+        </Form.Item>
 
         {/* <div className="flex items-center justify-between mb-6 text-sm">
            <label className="flex items-center text-gray-600 cursor-pointer">
@@ -76,9 +100,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
            </button>
         </div> */}
 
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {Object.keys(fieldErrors).length === 0 && error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
-        <Button  className='!bg-blue-500 !text-white !mt-4 !h-12 !w-72' loading={loading}>Login now</Button>
+        <Button  className='!bg-blue-500 !text-white !mt-4 !h-12 !w-72' loading={loading} onClick={handleSubmit}>Login now</Button>
 
         <p className="text-center text-sm text-gray-600 mt-6 ">
           Dont have an account? <button type="button" onClick={onNavigateToRegister} className="text-primary font-medium hover:underline text-blue-500">Create New Account</button>
