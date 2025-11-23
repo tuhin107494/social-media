@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,7 +17,7 @@ class PostController extends Controller
             ->latest()
             ->paginate(15);
 
-        return response()->json($posts);
+        return PostResource::collection($posts);
     }
 
     public function store(Request $request)
@@ -31,14 +32,16 @@ class PostController extends Controller
             $request->only(['body', 'image_path', 'is_public']),
             ['user_id' => $request->user()->id]
         ));
+        
+        return (new PostResource($post))->response()->setStatusCode(201);
 
-        return response()->json($post->load('user'), Response::HTTP_CREATED);
     }
+
 
     public function show(Post $post)
     {
         $post->load(['user', 'comments.user', 'likes']);
-        return response()->json($post);
+        return new PostResource($post);
     }
 
     public function update(Request $request, Post $post)
@@ -53,13 +56,13 @@ class PostController extends Controller
 
         $post->update($request->only(['body', 'image_path', 'is_public']));
 
-        return response()->json($post);
+        return new PostResource($post);
     }
 
     public function destroy(Post $post)
     {
         $this->authorize('delete', $post); // optional
         $post->delete();
-        return response()->json(null, Response::HTTP_NO_CONTENT);
+        return response()->noContent();
     }
 }
