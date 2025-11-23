@@ -8,8 +8,8 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
   return (
     <div className="hidden lg:block w-64 flex-shrink-0">
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h2 className="font-bold text-gray-900 mb-4 text-lg">Explore</h2>
-        <ul className="space-y-1">
+        <h6 className="!font-bold text-gray-900 mb-4 text-lg">Explore</h6>
+        <ul className="!ml-[-50px]">
           {[
             { icon: <PlayCircle className="w-5 h-5" />, label: 'Learning', badge: 'New', color: 'text-green-500' },
             { icon: <BarChart2 className="w-5 h-5" />, label: 'Insights' },
@@ -20,10 +20,10 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
             { icon: <Settings className="w-5 h-5" />, label: 'Settings' },
             { icon: <FileBox className="w-5 h-5" />, label: 'Save post' },
           ].map((item, idx) => (
-            <li key={idx}>
+            <li key={idx} className='!ml-0'>
               <button className={`flex items-center justify-between w-full px-3 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-50`}>
                 <div className="flex items-center">
-                  <span className="mr-3 text-gray-500">{item.icon}</span>
+                  <span className="!ml-0 !mr-3 text-gray-500">{item.icon}</span>
                   <span className="font-medium text-sm">{item.label}</span>
                 </div>
                 {item.badge && (
@@ -37,7 +37,7 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
 
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
          <div className="flex justify-between items-center mb-4">
-          <h2 className="font-bold text-gray-900">Suggested People</h2>
+          <h6 className="!font-bold text-gray-900">Suggested People</h6>
           <button className="text-xs text-primary">See All</button>
          </div>
          <div className="space-y-4">
@@ -58,7 +58,7 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
 
       <div className="bg-white rounded-xl shadow-sm p-4">
          <div className="flex justify-between items-center mb-4">
-          <h2 className="font-bold text-gray-900">Events</h2>
+          <h6 className="!font-bold text-gray-900">Events</h6>
           <button className="text-xs text-primary font-medium">See all</button>
          </div>
          <div className="space-y-4">
@@ -73,7 +73,7 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
                  </div>
                  <div className="flex justify-between items-start">
                    <div>
-                      <h3 className="font-bold text-sm text-gray-900 group-hover:text-primary transition-colors">{event.title}</h3>
+                      <h6 className="font-bold text-sm text-gray-900 group-hover:text-primary transition-colors">{event.title}</h6>
                       <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                         <MapPin className="w-3 h-3" /> {event.location}
                       </p>

@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+// Global styles
+import 'antd/dist/reset.css';
+// import '../css/common.css';
+import '../css/bootstrap.min.css';
+import '../css/main.css'; 
+import '../css/responsive.css';
 import ReactDOM from 'react-dom/client';
 import Login from './components/Login';
 import Register from './components/register';
