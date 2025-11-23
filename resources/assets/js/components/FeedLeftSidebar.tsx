@@ -1,6 +1,7 @@
 import React from 'react';
 import { User } from '../types';
 import { PlayCircle, BarChart2, Users, BookMarked, Gamepad2, Settings, FileBox, MapPin, Search } from 'lucide-react';
+import { Button } from 'antd';
 
 interface EventItem { id: string; title: string; location: string; date: string; imageUrl: string }
 
@@ -20,16 +21,16 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
             { icon: <Settings className="w-5 h-5" />, label: 'Settings' },
             { icon: <FileBox className="w-5 h-5" />, label: 'Save post' },
           ].map((item, idx) => (
-            <li key={idx} className='!ml-0'>
-              <button className={`flex items-center justify-between w-full px-3 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-50`}>
+            <li key={idx} className='!m-0 '>
+              <Button className={`!flex !items-center  shadow-none !justify-between !w-full !px-3 !py-3 text-gray-600 hover:bg-gray-50 !border-none !mt-4`}>
                 <div className="flex items-center">
-                  <span className="!ml-0 !mr-3 text-gray-500">{item.icon}</span>
-                  <span className="font-medium text-sm">{item.label}</span>
+                  <span className="!ml-0 !mr-3 text-gray-500 font-bold">{item.icon}</span>
+                  <span className="!font-bold text-sm">{item.label}</span>
                 </div>
                 {item.badge && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-600`}>{item.badge}</span>
                 )}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -38,7 +39,7 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
          <div className="flex justify-between items-center mb-4">
           <h6 className="!font-bold text-gray-900">Suggested People</h6>
-          <button className="text-xs text-primary">See All</button>
+          <Button className="text-primary font-medium !border-none !p-0 shadow-none ">See All</Button>
          </div>
          <div className="space-y-4">
             {users.slice(0,3).map(u => (
@@ -50,7 +51,7 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
                        <p className="text-xs text-gray-500 truncate">User</p>
                     </div>
                  </div>
-                 <button className="text-xs border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 text-gray-600">Connect</button>
+                 <Button className="text-xs border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 text-gray-600">Connect</Button>
               </div>
             ))}
          </div>
@@ -59,7 +60,7 @@ const LeftSidebar: React.FC<{ users: User[]; events: EventItem[] }> = ({ users, 
       <div className="bg-white rounded-xl shadow-sm p-4">
          <div className="flex justify-between items-center mb-4">
           <h6 className="!font-bold text-gray-900">Events</h6>
-          <button className="text-xs text-primary font-medium">See all</button>
+          <Button className="text-primary font-medium !border-none !p-0 shadow-none ">See all</Button>
          </div>
          <div className="space-y-4">
             {events.map(event => (
