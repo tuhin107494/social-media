@@ -1,0 +1,105 @@
+import axios from 'axios';
+import { authFetch } from '../auth';
+import { User, Post, Story } from '../types';
+
+export async function getPosts(_currentUser?: User): Promise<Post[]> {
+  try {
+    const res = await authFetch('/posts');
+    return res.data?.data ?? res.data ?? [];
+  } catch (e) {
+    console.warn('getPosts failed, returning empty list', e);
+    return [];
+  }
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  try {
+    const res = await authFetch('/users');
+    return res.data?.data ?? res.data ?? [];
+  } catch (e) {
+    console.warn('getAllUsers failed, returning empty list', e);
+    return [];
+  }
+}
+
+export async function getStories(): Promise<Story[]> {
+  try {
+    const res = await authFetch('/stories');
+    return res.data?.data ?? res.data ?? [];
+  } catch (e) {
+    console.warn('getStories failed, returning empty list', e);
+    return [];
+  }
+}
+
+export async function createPost(
+  contentOrPayload: string | { body?: string; imageUrl?: string; privacy?: string; user?: User; files?: any[] },
+  files?: File[],
+) {
+
+  try {
+    // If caller passed (content: string, files?: File[])
+    if (typeof contentOrPayload === 'string') {
+      const body = contentOrPayload;
+      if (files && files.length) {
+        const fd = new FormData();
+        fd.append('body', body);
+        files.forEach((f) => fd.append('files[]', f));
+        const res = await authFetch('/posts', { method: 'post', data: fd });
+        return res.data;
+      }
+      const res = await authFetch('/posts', { method: 'post', data: { body } });
+      return res.data;
+    }
+
+    // If caller passed a payload object
+    const payload = contentOrPayload || {};
+    // If payload.files appears to be File objects, send multipart
+    if (payload.files && Array.isArray(payload.files) && payload.files.length && payload.files[0] instanceof File) {
+      const fd = new FormData();
+      fd.append('body', payload.body || '');
+      payload.files.forEach((f: File) => fd.append('files[]', f));
+      const res = await authFetch('/posts', { method: 'post', data: fd });
+      return res.data;
+    }
+
+    // Default: send JSON payload
+    const res = await authFetch('/posts', { method: 'post', data: payload });
+    return res.data;
+  } catch (e) {
+    console.warn('createPost failed', e);
+    return null;
+  }
+}
+
+export async function toggleLikePost(postId: string, userId: string) {
+  try {
+    const res = await authFetch(`/posts/${postId}/like`, { method: 'post' });
+    return res.data;
+  } catch (e) {
+    console.warn('toggleLikePost failed (mock)', e);
+    return null;
+  }
+}
+
+export async function addComment(postId: string, user: User, text: string, parentId?: string) {
+  try {
+    const res = await authFetch(`/posts/${postId}/comments`, { method: 'post', data: { content: text, parent_id: parentId } });
+    return res.data;
+  } catch (e) {
+    console.warn('addComment failed (mock)', e);
+    return null;
+  }
+}
+
+export async function createStory(user: User, imageData: string) {
+  try {
+    const res = await authFetch('/stories', { method: 'post', data: { image: imageData } });
+    return res.data;
+  } catch (e) {
+    console.warn('createStory failed (mock)', e);
+    return null;
+  }
+}
+
+export default { getPosts, getAllUsers, getStories, createPost, toggleLikePost, addComment, createStory };

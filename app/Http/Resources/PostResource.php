@@ -1,4 +1,5 @@
 <?php
+namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -8,7 +9,7 @@ class PostResource extends JsonResource
     {
         return [
             'id'      => $this->id,
-            'content' => $this->content,
+            'content' => $this->body,
             'image'   => $this->image,
             'author'  => [
                 'id'   => $this->user->id,
@@ -16,7 +17,7 @@ class PostResource extends JsonResource
             ],
             'likes_count'    => $this->likes()->count(),
             'comments_count' => $this->comments()->count(),
-            'created_at'     => $this->created_at->toDateTimeString(),
+            'created_at' => $this->created_at->diffForHumans()
         ];
     }
 }

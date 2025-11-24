@@ -1,35 +1,38 @@
-import React, { useState } from 'react';
-import AuthLayout from './authLayouts';
-import { Button, Input, Form } from 'antd';
-import { User } from '../types';
-import { loginUser } from '../auth';
-import illustration from '../../images/login.png';
+import React from "react";
+import { Form, Input, Button, Checkbox } from "antd"; // ✅ Antd imports
+import "../../css/bootstrap.min.css";
+import "../../css/common.css";
+import "../../css/main.css";
+import "../../css/responsive.css";
 
+// Import images so Vite resolves and bundles them correctly
+import shape1 from '../../images/shape1.svg';
+import darkShape from '../../images/dark_shape.svg';
+import shape2 from '../../images/shape2.svg';
+import darkShape1 from '../../images/dark_shape1.svg';
+import shape3 from '../../images/shape3.svg';
+import darkShape2 from '../../images/dark_shape2.svg';
+import loginImg from '../../images/login.png';
+import logoImg from '../../images/logo.svg';
+import googleImg from '../../images/google.svg';
+import { loginUser } from "../auth";
 
-interface LoginProps {
-  onLogin: (user: User) => void;
-  onNavigateToRegister: () => void;
-}
+const Login = ({ onLogin, onNavigateToRegister }) => {
 
-const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFinish = async (values: { email: string; password: string }) => {
     setError('');
     setFieldErrors({});
     setLoading(true);
-    
+
     try {
-      const user = await loginUser(email, password);
+      const user = await loginUser(values.email, values.password);
       onLogin(user);
     } catch (err: any) {
       if (err?.errors) {
-        // convert errors object (array of messages) to first-message string per field
         const mapped: Record<string, string> = {};
         Object.entries(err.errors).forEach(([k, v]) => {
           mapped[k] = Array.isArray(v) ? v[0] : (v as string);
@@ -45,70 +48,124 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToRegister }) => {
   };
 
   return (
-    <AuthLayout title="Login to your account" subtitle="Welcome back" illustration={illustration}>
-      {/* Social Login Mock */}
-      <div className="mb-6">
-         <button className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium">
-           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-           Or sign-in with google
-         </button>
+    <section className="_social_login_wrapper _layout_main_wrapper">
+      {/* Shapes */}
+      <div className="_shape_one">
+        <img src={shape1} alt="" className="_shape_img" />
+        <img src={darkShape} alt="" className="_dark_shape" />
       </div>
 
-      <div className="relative flex py-2 items-center mb-6">
-        <div className="flex-grow border-t border-gray-300"></div>
-        <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">Or</span>
-        <div className="flex-grow border-t border-gray-300"></div>
+      <div className="_shape_two">
+        <img src={shape2} alt="" className="_shape_img" />
+        <img src={darkShape1} alt="" className="_dark_shape _dark_shape_opacity" />
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <Form.Item
-          validateStatus={fieldErrors.email ? 'error' : ''}
-          help={fieldErrors.email}
-          className="!mt-4"
-        >
-          <Input
-            placeholder="Email"
-            type="email"
-            className='!h-12'
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setFieldErrors(prev=>({ ...prev, email: undefined })); }}
-            required
-          />
-        </Form.Item>
-        <Form.Item
-          validateStatus={fieldErrors.password ? 'error' : ''}
-          help={fieldErrors.password}
-          className="!mt-4"
-        >
-          <Input
-            placeholder="Password"
-            type="password"
-            className='!h-12'
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setFieldErrors(prev=>({ ...prev, password: undefined })); }}
-            required
-          />
-        </Form.Item>
+      <div className="_shape_three">
+        <img src={shape3} alt="" className="_shape_img" />
+        <img src={darkShape2} alt="" className="_dark_shape _dark_shape_opacity" />
+      </div>
 
-        {/* <div className="flex items-center justify-between mb-6 text-sm">
-           <label className="flex items-center text-gray-600 cursor-pointer">
-              <input type="checkbox" className="mr-2 rounded border-gray-300 text-primary focus:ring-primary" />
-              Remember me
-           </label>
-           <button type="button" className="text-primary hover:underline font-medium">
-             Forgot password?
-           </button>
-        </div> */}
+      {/* Login container */}
+      <div className="_social_login_wrap">
+        <div className="container">
+          <div className="row align-items-center">
 
-        {Object.keys(fieldErrors).length === 0 && error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+            {/* Left Illustration */}
+            <div className="col-xl-8 col-lg-8 col-md-12 col-sm-12">
+              <div className="_social_login_left">
+                <div className="_social_login_left_image">
+                  <img src={loginImg} alt="Login Illustration" className="_left_img" />
+                </div>
+              </div>
+            </div>
 
-        <Button  className='!bg-blue-500 !text-white !mt-4 !h-12 !w-72' loading={loading} onClick={handleSubmit}>Login now</Button>
+            {/* Form Section */}
+            <div className="col-xl-4 col-lg-4 col-md-12 col-sm-12">
+              <div className="_social_login_content">
 
-        <p className="text-center text-sm text-gray-600 mt-6 ">
-          Dont have an account? <button type="button" onClick={onNavigateToRegister} className="text-primary font-medium hover:underline text-blue-500">Create New Account</button>
-        </p>
-      </form>
-    </AuthLayout>
+                <div className="_social_login_left_logo _mar_b28">
+                  <img src={logoImg} alt="Logo" className="_left_logo" />
+                </div>
+
+                <p className="_social_login_content_para _mar_b8">Welcome back</p>
+                <h4 className="_social_login_content_title _titl4 _mar_b50">
+                  Login to your account
+                </h4>
+
+                <button type="button" className="_social_login_content_btn _mar_b40">
+                  <img src={googleImg} alt="Google Login" className="_google_img" />
+                  <span>Or sign-in with Google</span>
+                </button>
+
+                <div className="_social_login_content_bottom_txt _mar_b40">
+                  <span>Or</span>
+                </div>
+
+                <Form
+                  layout="vertical"
+                  onFinish={onFinish}
+                  className="_social_login_form"
+                  initialValues={{ remember: true }}
+                >
+                 
+                  <Form.Item
+                    label="Email"
+                    name="email"
+                    rules={[
+                      { required: true, message: "Email is required!" },
+                      { type: "email", message: "Enter a valid email!" },
+                    ]}
+                  >
+                    <Input className="_social_login_input" size="large" />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Password"
+                    name="password"
+                    rules={[{ required: true, message: "Password is required!" }]}
+                  >
+                    <Input.Password className="_social_login_input" size="large" />
+                  </Form.Item>
+
+                  <div className="row">
+                    <div className="col-6">
+                      <Form.Item name="remember" valuePropName="checked" noStyle>
+                        <Checkbox>Remember me</Checkbox>
+                      </Form.Item>
+                    </div>
+
+                    <div className="col-6 text-end">
+                      <p className="_social_login_form_left_para">Forgot password?</p>
+                    </div>
+                  </div>
+
+                  <Form.Item className="_mar_t40 _mar_b60">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className="_social_login_form_btn_link _btn1"
+                      block
+                      size="large"
+                    >
+                      Login now
+                    </Button>
+                  </Form.Item>
+                </Form>
+
+                <div className="_social_login_bottom_txt">
+                  <p className="_social_login_bottom_txt_para">
+                    Don’t have an account? <a  onClick={onNavigateToRegister}>Create New Account</a>
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
   );
 };
 

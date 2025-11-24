@@ -19,9 +19,12 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
+    
+    // Users
+    Route::apiResource('users', UserController::class);
 
     // Profile
-    Route::apiResource('profiles', ProfileController::class)->only(['show', 'update']);
+    // Route::apiResource('profiles', ProfileController::class)->only(['show', 'update']);
 
     // Posts
     Route::apiResource('posts', PostController::class);
@@ -36,8 +39,8 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/posts/{post}/like', [LikeController::class, 'destroy']);
 
     // Friendships (Follow/Unfollow)
-    Route::post('/follow/{user}', [FriendshipController::class, 'follow']);
-    Route::delete('/unfollow/{user}', [FriendshipController::class, 'unfollow']);
-    Route::get('/friends', [FriendshipController::class, 'index']);
+    // Route::post('/follow/{user}', [FriendshipController::class, 'follow']);
+    // Route::delete('/unfollow/{user}', [FriendshipController::class, 'unfollow']);
+    // Route::get('/friends', [FriendshipController::class, 'index']);
 });
 

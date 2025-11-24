@@ -1,55 +1,44 @@
-import React, { useState } from 'react';
-import AuthLayout from './authLayouts';
+import React from "react";
+import { Form, Input, Button, Checkbox } from "antd";
+import "../../css/bootstrap.min.css";
+import "../../css/common.css";
+import "../../css/main.css";
+import "../../css/responsive.css";
 
-import { User } from '../types';
-import { Button, Input, message, Form } from 'antd';
-import { registerUser } from '../auth';
-import illustration from '../../images/registration.png';
+// Images — adjust paths if needed
+import shape1 from "../../images/shape1.svg";
+import darkShape from "../../images/dark_shape.svg";
+import shape2 from "../../images/shape2.svg";
+import darkShape1 from "../../images/dark_shape1.svg";
+import shape3 from "../../images/shape3.svg";
+import darkShape2 from "../../images/dark_shape2.svg";
+import registrationImg from "../../images/registration.png";
+import registrationDarkImg from "../../images/registration1.png";
+import logoImg from "../../images/logo.svg";
+import googleImg from "../../images/google.svg";
+import { registerUser } from "../auth";
 
-interface RegisterProps {
-    onLogin: (user: User) => void;
-    onNavigateToLogin: () => void;
-}
+const Register = ({ onRegister, onNavigateToLogin }) => {
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState("");
+    const [fieldErrors, setFieldErrors] =
+        React.useState<Record<string, string>>({});
 
-const Register: React.FC<RegisterProps> = ({ onLogin, onNavigateToLogin }) => {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-        // clear field error for this field
-        setFieldErrors(prev => ({ ...prev, [e.target.name]: undefined }));
-    };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    const onFinish = async (values: {
+        email: string;
+        password: string;
+        confirm: string;
+        terms: boolean;
+        first_name?: string;
+        last_name?: string;
+    }) => {
+        setError("");
         setFieldErrors({});
-
-        if (formData.password !== formData.confirmPassword) {
-            setFieldErrors(prev => ({ ...prev, password_confirmation: 'Passwords do not match' }));
-            return;
-        }
-
         setLoading(true);
-        try {
-            const user = await registerUser({
-                first_name: formData.firstName,
-                last_name: formData.lastName,
-                email: formData.email,
-                password: formData.password,
-                password_confirmation: formData.confirmPassword,
-            });
 
-            message.success('Registration successful. Please login.');
-            setTimeout(() => onNavigateToLogin(), 600);
+        try {
+            const user = await registerUser(values);
+            onRegister(user);
         } catch (err: any) {
             if (err?.errors) {
                 const mapped: Record<string, string> = {};
@@ -57,131 +46,175 @@ const Register: React.FC<RegisterProps> = ({ onLogin, onNavigateToLogin }) => {
                     mapped[k] = Array.isArray(v) ? v[0] : (v as string);
                 });
                 setFieldErrors(mapped);
-                setError(err.message || 'Validation error');
-            } else {
-                setError(err?.message || 'Failed to register');
             }
+            setError(err?.message || "Registration failed");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <AuthLayout title="Registration" subtitle="Get Started Now" illustration={illustration}>
-            <div className="mb-6">
-                <button className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                    Register with google
-                </button>
+        <section className="_social_registration_wrapper _layout_main_wrapper">
+            {/* Shapes */}
+            <div className="_shape_one">
+                <img src={shape1} alt="" className="_shape_img" />
+                <img src={darkShape} alt="" className="_dark_shape" />
             </div>
 
-            <div className="relative flex py-2 items-center mb-6">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">Or</span>
-                <div className="flex-grow border-t border-gray-300"></div>
+            <div className="_shape_two">
+                <img src={shape2} alt="" className="_shape_img" />
+                <img src={darkShape1} alt="" className="_dark_shape _dark_shape_opacity" />
             </div>
 
-            <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-2 gap-4">
-                    <Form.Item
-                        validateStatus={fieldErrors.first_name ? 'error' : ''}
-                        help={fieldErrors.first_name}
-                        className="!mt-4"
-                    >
-                        <Input
-                            name="firstName"
-                            placeholder="First Name"
-                            className='!h-12'
-                            value={formData.firstName}
-                            onChange={handleChange}
-                            required
-                        />
-                    </Form.Item>
+            <div className="_shape_three">
+                <img src={shape3} alt="" className="_shape_img" />
+                <img src={darkShape2} alt="" className="_dark_shape _dark_shape_opacity" />
+            </div>
 
-                    <Form.Item
-                        validateStatus={fieldErrors.last_name ? 'error' : ''}
-                        help={fieldErrors.last_name}
-                        className="!mt-4"
-                    >
-                        <Input
-                            name="lastName"
-                            placeholder="Last Name"
-                            className='!h-12'
-                            value={formData.lastName}
-                            onChange={handleChange}
-                            required
-                        />
-                    </Form.Item>
+            {/* Main Container */}
+            <div className="_social_registration_wrap">
+                <div className="container">
+                    <div className="row align-items-center">
+
+                        {/* Left Side Image */}
+                        <div className="col-xl-8 col-lg-8 col-md-12 col-sm-12">
+                            <div className="_social_registration_right">
+                                <div className="_social_registration_right_image">
+                                    <img src={registrationImg} alt="Registration Illustration" />
+                                </div>
+                                <div className="_social_registration_right_image_dark">
+                                    <img src={registrationDarkImg} alt="Dark Registration Illustration" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form Section */}
+                        <div className="col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                            <div className="_social_registration_content">
+
+                                <div className="_social_registration_right_logo _mar_b28">
+                                    <img src={logoImg} alt="Logo" className="_right_logo" />
+                                </div>
+
+                                <p className="_social_registration_content_para _mar_b8">Get Started Now</p>
+                                <h4 className="_social_registration_content_title _titl4 _mar_b50">
+                                    Registration
+                                </h4>
+
+                                {/* Google button */}
+                                <button type="button" className="_social_registration_content_btn _mar_b40">
+                                    <img src={googleImg} alt="Google Register" className="_google_img" />
+                                    <span>Register with Google</span>
+                                </button>
+
+                                <div className="_social_registration_content_bottom_txt _mar_b40">
+                                    <span>Or</span>
+                                </div>
+
+                                {/* Registration Form */}
+                                <Form layout="vertical" onFinish={onFinish} className="_social_registration_form">
+                                    <Form.Item
+                                        label="First Name"
+                                        name="first_name"
+                                        rules={[
+                                            { required: true, message: "First name is required!" },
+                                        ]}
+                                    >
+                                        <Input className="_social_login_input" size="large" />
+                                    </Form.Item>
+                                    <Form.Item
+                                        label="Last Name"
+                                        name="last_name"
+                                        rules={[
+                                            { required: true, message: "Last name is required!" },
+                                        ]}
+                                    >
+                                        <Input className="_social_login_input" size="large" />
+                                    </Form.Item>
+
+                                    <Form.Item
+                                        label="Email"
+                                        name="email"
+                                        rules={[
+                                            { required: true, message: "Email is required!" },
+                                            { type: "email", message: "Enter a valid email!" },
+                                        ]}
+                                    >
+                                        <Input className="_social_registration_input" size="large" />
+                                    </Form.Item>
+
+                                    <Form.Item
+                                        label="Password"
+                                        name="password"
+                                        rules={[{ required: true, message: "Password is required!" }]}
+                                    >
+                                        <Input.Password className="_social_registration_input" size="large" />
+                                    </Form.Item>
+
+                                    <Form.Item
+                                        label="Repeat Password"
+                                        name="password_confirmation"
+                                        dependencies={["password"]}
+                                        rules={[
+                                            { required: true, message: "Confirm your password!" },
+                                            ({ getFieldValue }) => ({
+                                                validator(_, value) {
+                                                    if (!value || getFieldValue("password") === value) {
+                                                        return Promise.resolve();
+                                                    }
+                                                    return Promise.reject(new Error("Passwords do not match!"));
+                                                },
+                                            }),
+                                        ]}
+                                    >
+                                        <Input.Password className="_social_registration_input" size="large" />
+                                    </Form.Item>
+
+                                    <Form.Item
+                                        name="terms"
+                                        valuePropName="checked"
+                                        rules={[
+                                            {
+                                                validator: (_, value) =>
+                                                    value
+                                                        ? Promise.resolve()
+                                                        : Promise.reject("You must accept terms & conditions"),
+                                            },
+                                        ]}
+                                    >
+                                        <Checkbox>I agree to terms & conditions</Checkbox>
+                                    </Form.Item>
+
+                                    <Form.Item className="_mar_t40 _mar_b60">
+                                        <Button
+                                            type="primary"
+                                            htmlType="submit"
+                                            className="_social_registration_form_btn_link _btn1"
+                                            loading={loading}
+                                            block
+                                            size="large"
+                                        >
+                                            Register Now
+                                        </Button>
+                                    </Form.Item>
+                                </Form>
+
+                                <div className="_social_registration_bottom_txt">
+                                    <p className="_social_registration_bottom_txt_para">
+                                        Already have an account?{" "}
+                                        <a href="" onClick={onNavigateToLogin}>
+                                            Login now
+                                        </a>
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <Form.Item
-                    validateStatus={fieldErrors.email ? 'error' : ''}
-                    help={fieldErrors.email}
-                    className="!mt-4"
-                >
-                    <Input
-                        name="email"
-                        placeholder="Email"
-                        className='!h-12'
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                </Form.Item>
-                <Form.Item
-                    validateStatus={fieldErrors.password ? 'error' : ''}
-                    help={fieldErrors.password}
-                    className="!mt-4"
-                >
-                    <Input
-                        name="password"
-                        placeholder='Password'
-                        type="password"
-                        className='!h-12'
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
-                </Form.Item>
-                <Form.Item
-                    validateStatus={fieldErrors.password_confirmation ? 'error' : ''}
-                    help={fieldErrors.password_confirmation}
-                    className="!mt-4"
-                >
-                    <Input
-                        name="confirmPassword"
-                        placeholder="Confirm Password"
-                        type="password"
-                        className='!h-12'
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        required
-                    />
-                </Form.Item>
-                
-
-                <div className="flex items-center !mt-6 text-sm">
-                    <label className="flex items-center text-gray-600 cursor-pointer">
-                        <input type="checkbox" required className="mr-2 rounded border-gray-300 text-primary focus:ring-primary" />
-                        I agree to terms & conditions
-                    </label>
-                </div>
-
-                {Object.keys(fieldErrors).length === 0 && error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-
-                <Button
-                    className='!bg-blue-500 !text-white !mt-4 !h-12 !w-72'
-                    loading={loading}
-                    onClick={handleSubmit}
-                >
-                    Register Now
-                </Button>
-
-                <p className="text-center text-sm text-gray-600 mt-6">
-                    Already have an account? <button type="button" onClick={onNavigateToLogin} className="text-primary font-medium hover:underline text-blue-500">Login now</button>
-                </p>
-            </form>
-        </AuthLayout>
+            </div>
+        </section>
     );
 };
 

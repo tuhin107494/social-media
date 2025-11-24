@@ -3,7 +3,7 @@ import { User } from "./types";
 
 const SESSION_KEY = "app_user_session_v1";
 
-// Create axios instance
+// Create axios instance pointed at Laravel's API prefix
 const api = axios.create({
     baseURL: "/api",
     headers: { Accept: "application/json" },
@@ -33,9 +33,14 @@ export function logoutUser() {
 // ---- Add token to requests automatically ----
 api.interceptors.request.use((config) => {
     const session = getSession();
-    if (session?.token) {
+    const hasToken = !!session?.token;
+    // Attach token when present. Also help debugging by logging request target and token presence (not the token value).
+    if (hasToken) {
         config.headers.Authorization = `Bearer ${session.token}`;
     }
+    // Debug helper (do not log actual token)
+    // eslint-disable-next-line no-console
+    console.debug('[auth] request', { url: config.url, method: config.method, hasToken });
     return config;
 });
 
@@ -53,11 +58,15 @@ export async function loginUser(email: string, password: string): Promise<User> 
     try {
         const { data } = await api.post("/login", { email, password });
 
+        // Token can be returned under various keys depending on server config
+        const token = data?.token || data?.accessToken || data?.access_token || data?.data?.token;
+
+        const userPayload = data.user ?? data.data ?? {};
         const user: User = {
-            id: data.user?.id,
-            email: data.user?.email,
-            name: `${data.user?.first_name || ""} ${data.user?.last_name || ""}`.trim(),
-            token: data.token || data.accessToken,
+            id: userPayload?.id,
+            email: userPayload?.email || email,
+            name: `${userPayload?.first_name || userPayload?.firstName || ""} ${userPayload?.last_name || userPayload?.lastName || ""}`.trim(),
+            token: token,
         };
 
         saveSession(user);
@@ -77,11 +86,14 @@ export async function registerUser(payload: {
     try {
         const { data } = await api.post("/register", payload);
 
+        const token = data?.token || data?.accessToken || data?.access_token || data?.data?.token;
+        const userPayload = data.user ?? data.data ?? {};
+
         const user: User = {
-            id: data.user?.id,
-            email: data.user?.email,
+            id: userPayload?.id,
+            email: userPayload?.email || payload.email,
             name: `${payload.first_name || ""} ${payload.last_name || ""}`.trim(),
-            token: data.token,
+            token: token,
         };
 
         saveSession(user);
