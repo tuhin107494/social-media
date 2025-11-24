@@ -10,7 +10,8 @@ class PostResource extends JsonResource
         return [
             'id'      => $this->id,
             'content' => $this->body,
-            'image'   => $this->image,
+            'image_url' => collect(json_decode($this->image_path ?? '[]'))
+                        ->map(fn($img_path) => asset("/storage/$img_path")),
             'author'  => [
                 'id'   => $this->user->id,
                 'name' => $this->user->name,

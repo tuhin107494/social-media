@@ -16,6 +16,7 @@ class PostController extends Controller
             ->where('is_public', true)
             ->latest()
             ->paginate(15);
+
         return PostResource::collection($posts);
     }
 
@@ -84,7 +85,7 @@ class PostController extends Controller
 
     private function storeUploadedFiles(Request $request): array
     {
-        if (! $request->hasFile('files')) {
+        if (!$request->hasFile('files')) {
             return [];
         }
 

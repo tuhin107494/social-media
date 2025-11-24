@@ -29,6 +29,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
         (async () => {
             try {
                 const fetched = await getPosts(currentUser ?? undefined);
+                console.log('fetched posts:', fetched);
                 if (mounted) setPosts(fetched ?? []);
             } catch (err) {
                 console.warn('failed to load posts', err);
@@ -92,7 +93,14 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
 
 
                                         {/* feed area */}
-                                        <FeedPostCard />
+                                        {posts.length > 0 && (
+                                        <FeedPostCard 
+                                            posts={posts}
+                                        />
+                                        )}
+                                        { posts.length === 0 && (
+                                            <p>No posts to display.</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
