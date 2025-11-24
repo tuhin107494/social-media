@@ -7,18 +7,38 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Http\Requests\PostRequest;
 use App\Http\Resources\PostResource;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PostController extends Controller
 {
-    public function index()
+    use AuthorizesRequests;
+
+    public function index(Request $request)
     {
-        $posts = Post::with(['user', 'comments', 'likes'])
-            ->where('is_public', true)
-            ->latest()
-            ->paginate(15);
+        $userId = optional($request->user())->id;
+        $lastPostId = $request->query('last_id'); 
+
+        $query = Post::with(['user', 'comments', 'likes'])
+            ->where(function ($q) use ($userId) {
+                $q->where('is_public', true); 
+                if ($userId) {
+                    $q->orWhere(function ($q2) use ($userId) {
+                        $q2->where('is_public', false)
+                            ->where('user_id', $userId); 
+                    });
+                }
+            })
+            ->latest(); // latest first
+
+        if ($lastPostId) {
+            $query->where('id', '<', $lastPostId); // fetch older posts
+        }
+
+        $posts = $query->limit(10)->get(); 
 
         return PostResource::collection($posts);
     }
+
 
     public function store(PostRequest $request)
     {
@@ -102,5 +122,19 @@ class PostController extends Controller
         $this->authorize('delete', $post); // optional
         $post->delete();
         return response()->noContent();
+    }
+    public function changePrivacy(Request $request, Post $post)
+    {
+
+        $this->authorize('update', $post);
+
+        $validated = $request->validate([
+            'is_public' => 'required|boolean',
+        ]);
+
+        $post->is_public = $validated['is_public'];
+        $post->save();
+
+        return new PostResource($post);
     }
 }

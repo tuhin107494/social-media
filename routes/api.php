@@ -28,7 +28,8 @@ Route::middleware('auth:api')->group(function () {
 
     // Posts
     Route::apiResource('posts', PostController::class);
-
+    Route::post('/posts/{post}/privacy', [PostController::class, 'changePrivacy']);
+    
     // Comments inside posts
     Route::apiResource('posts.comments', CommentController::class)
         ->shallow()

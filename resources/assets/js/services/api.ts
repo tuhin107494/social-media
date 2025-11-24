@@ -2,9 +2,10 @@ import axios from 'axios';
 import { authFetch } from '../auth';
 import { User, Post, Story } from '../types';
 
-export async function getPosts(_currentUser?: User): Promise<Post[]> {
+export async function getPosts(_currentUser?: User, lastId) {
   try {
-    const res = await authFetch('/posts');
+    const url = lastId ? `/posts?last_id=${lastId}` : '/posts';
+    const res = await authFetch(url);
     return res.data?.data ?? res.data ?? [];
   } catch (e) {
     console.warn('getPosts failed, returning empty list', e);
@@ -78,6 +79,16 @@ export async function toggleLikePost(postId: string, userId: string) {
     return res.data;
   } catch (e) {
     console.warn('toggleLikePost failed (mock)', e);
+    return null;
+  }
+}
+
+export async function privacyChange(postId: string, isPublic: boolean) {
+  try {
+    const res = await authFetch(`/posts/${postId}/privacy`, { method: 'post', data: { is_public: isPublic } });
+    return res.data;
+  } catch (e) {
+    console.warn('privacyChange failed (mock)', e);
     return null;
   }
 }

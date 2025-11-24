@@ -9,19 +9,32 @@ import reactImg5 from '../../../../images/react_img5.png';
 import commentImg from '../../../../images/comment_img.png';
 import txtImg from '../../../../images/txt_img.png';
 import User from '../../../types';
+import { privacyChange } from '../../../services/api';
 type Post = {
     id: number;
     author: User;
     title: string;
+    content: string;
     image?: string;
     created_at: string;
     likes: number;
     comments: number;
 };
 
-const PostCard: React.FC<{ posts: Post[] }> = ({ posts }) => {
+const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStateAction<Post[]>> }> = ({ posts, setPosts }) => {
     const [open, setOpen] = useState(false);
     const toggleDropdown = () => setOpen(!open);
+
+
+    const handlePrivacyChange = async (postId: number, value: string) => {
+        
+        const res = await privacyChange(postId.toString(), value === "1");
+        const updatedPost = res?.data ?? res.data?.data ?? null;
+        if (updatedPost) {
+            setPosts(prev => [updatedPost, ...prev]);
+        }
+
+    }
 
     return (
         <>
@@ -36,8 +49,17 @@ const PostCard: React.FC<{ posts: Post[] }> = ({ posts }) => {
                                 <div className="_feed_inner_timeline_post_box_txt">
                                     <h4 className="_feed_inner_timeline_post_box_title">{post.author.name}</h4>
                                     <p className="_feed_inner_timeline_post_box_para">{post.created_at} .
-                                        <a href="#0">Public</a>
+                                        {/* <a href="#0">Public</a> */}
+                                        <select
+                                            value={post?.is_public} // "public" or "private"
+                                            onChange={(e) => handlePrivacyChange(post.id, e.target.value)}
+                                            className="_feed_inner_timeline_post_box_para"
+                                        >
+                                            <option value="1">Public</option>
+                                            <option value="0">Private</option>
+                                        </select>
                                     </p>
+
                                 </div>
                             </div>
                             <div className="_feed_inner_timeline_post_box_dropdown">
@@ -115,10 +137,10 @@ const PostCard: React.FC<{ posts: Post[] }> = ({ posts }) => {
                         </div>
                         <h4 className="_feed_inner_timeline_post_title">{post?.content}</h4>
                         {post?.image_url.map((img_url: string, index: number) => (
-                        <div className="_feed_inner_timeline_image" key={index}>
-                            <img src={img_url} alt="" className="_time_img" />
-                        </div>
-                    ))}
+                            <div className="_feed_inner_timeline_image" key={index}>
+                                <img src={img_url} alt="" className="_time_img" />
+                            </div>
+                        ))}
                     </div>
                     <div className="_feed_inner_timeline_total_reacts _padd_r24 _padd_l24 _mar_b26">
                         <div className="_feed_inner_timeline_total_reacts_image">
