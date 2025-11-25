@@ -79,7 +79,8 @@ class PostController extends Controller
         }
 
         $post = Post::create($data);
-
+        
+        $post->load(['user', 'comments.user', 'comments.children.user', 'likes']);
         return (new PostResource($post))->response()->setStatusCode(201);
     }
 

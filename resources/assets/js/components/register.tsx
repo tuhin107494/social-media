@@ -18,7 +18,7 @@ import logoImg from "../../images/logo.svg";
 import googleImg from "../../images/google.svg";
 import { registerUser } from "../auth";
 
-const Register = ({ onRegister, onNavigateToLogin }) => {
+const Register = ({ onLogin, onNavigateToLogin }) => {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
     const [fieldErrors, setFieldErrors] =
@@ -38,7 +38,7 @@ const Register = ({ onRegister, onNavigateToLogin }) => {
 
         try {
             const user = await registerUser(values);
-            onRegister(user);
+            onLogin(user);
         } catch (err: any) {
             if (err?.errors) {
                 const mapped: Record<string, string> = {};
