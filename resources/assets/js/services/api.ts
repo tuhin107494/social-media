@@ -93,6 +93,16 @@ export async function privacyChange(postId: string, isPublic: boolean) {
   }
 }
 
+export async function likeToggle(likeable_id, likeable_type_id) {
+  try {
+    const res = await authFetch(`/likes`, { method: 'post', data: { likeable_id: likeable_id, likeable_type_id: likeable_type_id } });
+    return res.data;
+  } catch (e) {
+    console.warn('like failed (mock)', e);
+    return null;
+  }
+}
+
 export async function addComment(postId: string, user: User, text: string, parentId?: string) {
   try {
     const res = await authFetch(`/posts/${postId}/comments`, { method: 'post', data: { content: text, parent_id: parentId } });

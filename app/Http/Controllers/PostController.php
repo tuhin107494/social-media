@@ -134,6 +134,8 @@ class PostController extends Controller
 
         $post->is_public = $validated['is_public'];
         $post->save();
+        
+        $post->load(['user', 'comments', 'likes']);
 
         return new PostResource($post);
     }

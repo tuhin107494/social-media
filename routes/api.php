@@ -36,8 +36,7 @@ Route::middleware('auth:api')->group(function () {
         ->only(['index', 'store', 'update', 'destroy']);
 
     // Likes
-    Route::post('/posts/{post}/like', [LikeController::class, 'store']);
-    Route::delete('/posts/{post}/like', [LikeController::class, 'destroy']);
+    Route::post('likes', [LikeController::class, 'toggle']);
 
     // Friendships (Follow/Unfollow)
     // Route::post('/follow/{user}', [FriendshipController::class, 'follow']);

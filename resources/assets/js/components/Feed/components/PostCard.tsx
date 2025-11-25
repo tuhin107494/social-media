@@ -9,7 +9,8 @@ import reactImg5 from '../../../../images/react_img5.png';
 import commentImg from '../../../../images/comment_img.png';
 import txtImg from '../../../../images/txt_img.png';
 import User from '../../../types';
-import { privacyChange } from '../../../services/api';
+import { likeToggle, privacyChange } from '../../../services/api';
+import axios from 'axios';
 type Post = {
     id: number;
     author: User;
@@ -24,17 +25,50 @@ type Post = {
 const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStateAction<Post[]>> }> = ({ posts, setPosts }) => {
     const [open, setOpen] = useState(false);
     const toggleDropdown = () => setOpen(!open);
+    const [reaction, setReaction] = useState<string | null>(""); // initial reaction state
+    const [loading, setLoading] = useState(false);
+
+    const handleToggle = async (likeable_id, likeable_type_id) => {
+
+        const res = await likeToggle(likeable_id, likeable_type_id);
+
+        if (likeable_type_id === 1) { // post
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === likeable_id
+                        ? {
+                            ...post,
+                            liked: res?.liked,
+                            likes_count: res?.likes_count,
+                        }
+                        : post
+                )
+            );
+        } else {
+
+        }
+
+    };
 
 
     const handlePrivacyChange = async (postId: number, value: string) => {
-        
+
         const res = await privacyChange(postId.toString(), value === "1");
         const updatedPost = res?.data ?? res.data?.data ?? null;
+        console.log("333355", updatedPost, posts);
         if (updatedPost) {
-            setPosts(prev => [updatedPost, ...prev]);
+            setPosts(prev =>
+                prev.map(post =>
+                    post.id === updatedPost.id
+                        ? { ...post, is_public: updatedPost.is_public } // only update public
+                        : post
+                )
+            );
         }
 
+
     }
+    console.log("postsdata", posts);
 
     return (
         <>
@@ -51,7 +85,7 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                                     <p className="_feed_inner_timeline_post_box_para">{post.created_at} .
                                         {/* <a href="#0">Public</a> */}
                                         <select
-                                            value={post?.is_public} // "public" or "private"
+                                            value={post?.is_public ? "1" : "0"} // "public" or "private"
                                             onChange={(e) => handlePrivacyChange(post.id, e.target.value)}
                                             className="_feed_inner_timeline_post_box_para"
                                         >
@@ -149,8 +183,9 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                             <img src={reactImg3} alt="Image" className="_react_img _rect_img_mbl_none" />
                             <img src={reactImg4} alt="Image" className="_react_img _rect_img_mbl_none" />
                             <img src={reactImg5} alt="Image" className="_react_img _rect_img_mbl_none" />
-                            <p className="_feed_inner_timeline_total_reacts_para">9+</p>
+                            <p className="_feed_inner_timeline_total_reacts_para">{post?.likes_count}</p>
                         </div>
+
                         <div className="_feed_inner_timeline_total_reacts_txt">
                             <p className="_feed_inner_timeline_total_reacts_para1">
                                 <a href="#0"><span>12</span> Comment</a>
@@ -159,17 +194,39 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                         </div>
                     </div>
                     <div className="_feed_inner_timeline_reaction">
-                        <button className="_feed_inner_timeline_reaction_emoji _feed_reaction _feed_reaction_active">
-                            <span className="_feed_inner_timeline_reaction_link"> <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 19 19">
-                                    <path fill="#FFCC4D" d="M9.5 19a9.5 9.5 0 100-19 9.5 9.5 0 000 19z" />
-                                    <path fill="#664500" d="M9.5 11.083c-1.912 0-3.181-.222-4.75-.527-.358-.07-1.056 0-1.056 1.055 0 2.111 2.425 4.75 5.806 4.75 3.38 0 5.805-2.639 5.805-4.75 0-1.055-.697-1.125-1.055-1.055-1.57.305-2.838.527-4.75.527z" />
-                                    <path fill="#fff" d="M4.75 11.611s1.583.528 4.75.528 4.75-.528 4.75-.528-1.056 2.111-4.75 2.111-4.75-2.11-4.75-2.11z" />
-                                    <path fill="#664500" d="M6.333 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847zM12.667 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847z" />
-                                </svg>
-                                Haha
-                            </span>
-                            </span>
+                        <button
+                            className="_feed_inner_timeline_reaction_emoji _feed_reaction _feed_reaction_active"
+                            onClick={() => handleToggle(post?.id, 1)}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                cursor: "pointer",
+                                background: "transparent",
+                                border: "none",
+                                color: post?.liked ? "red" : "gray",
+                                fontWeight: "bold",
+                                fontSize: "14px",
+                            }}
+                        >
+                            {/* Heart SVG */}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill={post?.liked ? "red" : "none"}
+                                stroke={post?.liked ? "red" : "gray"}
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 21C12 21 7 16.6 5 12.5 3 8.5 5.5 5 8 5c1.5 0 3 1 4 2 1-1 2.5-2 4-2 2.5 0 5 3.5 3 7.5-2 4.1-7 8.5-7 8.5z"
+                                />
+                            </svg>
+                            Love
+
                         </button>
                         <button className="_feed_inner_timeline_reaction_comment _feed_reaction">
                             <span className="_feed_inner_timeline_reaction_link"> <span>

@@ -1,49 +1,46 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\Like;
 use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+
 class LikeController extends Controller
 {
-    // toggle like (for polymorphic likeables)
     public function toggle(Request $request)
     {
         $request->validate([
             'likeable_id' => 'required|integer',
-            'likeable_type' => 'required|string'
+            'likeable_type_id' => 'required|integer',
         ]);
 
-        $likeableType = $request->likeable_type;
-        $likeableId = $request->likeable_id;
+        $likeableType = Like::getLikeableModel($request->likeable_type_id);
 
-        // resolve model class if you pass 'post' / 'comment' etc.
-        $map = [
-            'post' =>Post::class,
-            'comment' => Comment::class,
-        ];
+        $likeable = $likeableType::findOrFail($request->likeable_id);
 
-        if (isset($map[$likeableType])) {
-            $modelClass = $map[$likeableType];
+        $existingLike = Like::where('user_id', auth()->id())
+            ->where('likeable_id', $request->likeable_id)
+            ->where('likeable_type', $likeableType)
+            ->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+            $liked = false;
         } else {
-            // optionally allow a full class
-            $modelClass = $likeableType;
+            Like::create([
+                'user_id' => auth()->id(),
+                'likeable_id' => $request->likeable_id,
+                'likeable_type' => $likeableType,
+            ]);
+            $liked = true;
         }
-
-        $entity = $modelClass::findOrFail($likeableId);
-
-        $existing = $entity->likes()->where('user_id', $request->user()->id)->first();
-
-        if ($existing) {
-            $existing->delete();
-            return response()->json(['liked' => false], Response::HTTP_OK);
-        } else {
-            $entity->likes()->create(['user_id' => $request->user()->id]);
-            return response()->json(['liked' => true], Response::HTTP_CREATED);
-        }
+     
+        // Return liked status and updated like count
+        return response()->json([
+            'liked' => $liked,
+            'likes_count' => $likeable->likes()->count(),
+        ], Response::HTTP_OK);
     }
 }
