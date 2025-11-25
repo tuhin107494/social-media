@@ -15,29 +15,49 @@ class PostController extends Controller
 
     public function index(Request $request)
     {
-        $userId = optional($request->user())->id;
-        $lastPostId = $request->query('last_id'); 
+        $authUserId = optional($request->user())->id;
+        $lastPostId = $request->query('last_id');
+        $profileUserId = $request->query('user_id'); // optional user_id for profile posts
 
-        $query = Post::with(['user', 'comments', 'likes'])
-            ->where(function ($q) use ($userId) {
-                $q->where('is_public', true); 
-                if ($userId) {
-                    $q->orWhere(function ($q2) use ($userId) {
+        $query = Post::with([
+            'user',
+            'comments.user',
+            'comments.children.user',
+            'likes'
+        ]);
+
+        if ($profileUserId) {
+            // Profile feed: show only this user's posts
+            $query->where('user_id', $profileUserId)
+                ->where(function ($q) use ($profileUserId, $authUserId) {
+                    if ($authUserId !== (int) $profileUserId) {
+                        // if viewer is not owner, only public posts
+                        $q->where('is_public', true);
+                    }
+                });
+        } else {
+            // Main feed: public posts + user's own private posts
+            $query->where(function ($q) use ($authUserId) {
+                $q->where('is_public', true);
+
+                if ($authUserId) {
+                    $q->orWhere(function ($q2) use ($authUserId) {
                         $q2->where('is_public', false)
-                            ->where('user_id', $userId); 
+                            ->where('user_id', $authUserId);
                     });
                 }
-            })
-            ->latest(); // latest first
-
-        if ($lastPostId) {
-            $query->where('id', '<', $lastPostId); // fetch older posts
+            });
         }
 
-        $posts = $query->limit(10)->get(); 
+        if ($lastPostId) {
+            $query->where('id', '<', $lastPostId);
+        }
+
+        $posts = $query->latest()->limit(10)->get();
 
         return PostResource::collection($posts);
     }
+
 
 
     public function store(PostRequest $request)
@@ -134,7 +154,7 @@ class PostController extends Controller
 
         $post->is_public = $validated['is_public'];
         $post->save();
-        
+
         $post->load(['user', 'comments', 'likes']);
 
         return new PostResource($post);

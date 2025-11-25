@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import 'antd/dist/reset.css';
 // import '../css/common.css';
 import '../css/bootstrap.min.css';
-import '../css/main.css'; 
+import '../css/main.css';
 import '../css/responsive.css';
 import ReactDOM from 'react-dom/client';
 import Login from './components/Login';
@@ -22,7 +22,6 @@ const App: React.FC = () => {
   useEffect(() => {
     // Check for active session
     const sessionUser = getSession();
-    console.log('Session user:', sessionUser);
     if (sessionUser) {
       setUser(sessionUser as User);
       setCurrentPage('feed');
@@ -45,22 +44,21 @@ const App: React.FC = () => {
     return <div className="h-screen flex items-center justify-center bg-gray-100 text-gray-500">Loading BuddyScript...</div>;
   }
 
-  console.log('Rendering App, currentPage:', currentPage, 'user:', user);
 
 
   return (
     <>
       {currentPage === 'login' && (
         <Login
-          onLogin={handleLogin} 
-          onNavigateToRegister={() => setCurrentPage('register')} 
+          onLogin={handleLogin}
+          onNavigateToRegister={() => setCurrentPage('register')}
         />
       )}
 
       {currentPage === 'register' && (
-        <Register 
-          onLogin={handleLogin} 
-          onNavigateToLogin={() => setCurrentPage('login')} 
+        <Register
+          onLogin={handleLogin}
+          onNavigateToLogin={() => setCurrentPage('login')}
         />
       )}
 

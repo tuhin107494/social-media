@@ -17,8 +17,7 @@ const { Search } = Input;
 
 const Navbar: React.FC<Props> = ({ currentUser, onLogout }) => {
 
-    console.log('Navbar rendered with currentUser:', currentUser, currentUser.name );
-    
+
     const [isNotifyOpen, setIsNotifyOpen] = React.useState(false);
     const [isProfileOpen, setIsProfileOpen] = React.useState(false);
     return (

@@ -28,7 +28,7 @@ class Comment extends Model
     }
 
     // children replies
-    public function replies()
+    public function children()
     {
         return $this->hasMany(Comment::class, 'parent_id')->latest();
     }

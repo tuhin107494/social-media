@@ -29,9 +29,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
         (async () => {
             try {
                 const lastId = posts[posts.length - 1]?.id;
-
                 const fetched = await getPosts(currentUser ?? undefined, lastId);
-                console.log('fetched posts:', fetched);
                 if (mounted) setPosts(fetched ?? []);
             } catch (err) {
                 console.warn('failed to load posts', err);

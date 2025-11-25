@@ -16,14 +16,17 @@ class CommentController extends Controller
             'body' => 'required|string',
             'parent_id' => 'nullable|exists:comments,id',
         ]);
+   
+        $filePaths = $this->storeUploadedFiles($request);
 
         $comment = $post->comments()->create([
             'user_id' => $request->user()->id,
             'body' => $request->body,
             'parent_id' => $request->parent_id,
+            'image_path' => $filePaths ? json_encode($filePaths) : null,
         ]);
 
-        return new CommentResource($comment);
+       return new CommentResource($comment->load('user', 'children.user'));
     }
 
     public function update(Request $request, Comment $comment)
@@ -42,5 +45,19 @@ class CommentController extends Controller
         $this->authorize('delete', $comment);
         $comment->delete();
         return response()->json()->noContent();
+    }
+    
+     private function storeUploadedFiles(Request $request): array
+    {
+        if (!$request->hasFile('files')) {
+            return [];
+        }
+
+        $paths = [];
+        foreach ($request->file('files') as $file) {
+            $paths[] = $file->store('comments', 'public');
+        }
+
+        return $paths;
     }
 }

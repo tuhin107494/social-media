@@ -103,9 +103,10 @@ export async function likeToggle(likeable_id, likeable_type_id) {
   }
 }
 
-export async function addComment(postId: string, user: User, text: string, parentId?: string) {
+export async function addComment(postId: string, body, parentId = '') {
+
   try {
-    const res = await authFetch(`/posts/${postId}/comments`, { method: 'post', data: { content: text, parent_id: parentId } });
+    const res = await authFetch(`/posts/${postId}/comments`, { method: 'post', data: { body: body, parent_id: parentId } });
     return res.data;
   } catch (e) {
     console.warn('addComment failed (mock)', e);
