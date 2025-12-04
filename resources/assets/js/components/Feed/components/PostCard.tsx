@@ -35,11 +35,11 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
         setOpenComment(prev => !prev);
     };
 
-    const handleToggle = async (likeable_id, likeable_type_id) => {
+    const handleToggle = async (likeable_id, likeable_type) => {
 
-        const res = await likeToggle(likeable_id, likeable_type_id);
+        const res = await likeToggle(likeable_id, likeable_type);
 
-        if (likeable_type_id === 1) { // post
+        if (likeable_type === 'post') { // post
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === likeable_id
@@ -210,7 +210,7 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                     <div className="_feed_inner_timeline_reaction">
                         <button
                             className="_feed_inner_timeline_reaction_emoji _feed_reaction _feed_reaction_active"
-                            onClick={() => handleToggle(post?.id, 1)}
+                            onClick={() => handleToggle(post?.id, 'post')}
                             style={{
                                 display: "flex",
                                 alignItems: "center",
