@@ -75,7 +75,7 @@ export async function loginUser(email: string, password: string): Promise<User> 
         saveSession(user);
         return user;
     } catch (err: any) {
-        throw new Error(extractError(err));
+        throw err;
     }
 }
 
@@ -102,9 +102,20 @@ export async function registerUser(payload: {
         saveSession(user);
         return user;
     } catch (err: any) {
-        throw new Error(extractError(err));
+        // Instead of new Error, throw structured object
+        if (err.response?.status === 422) {
+            throw {
+                message: err.response.data?.message || "Validation Failed",
+                errors: err.response.data?.errors || {},
+            };
+        }
+        throw {
+            message: err.message || "Something went wrong",
+            errors: {},
+        };
     }
 }
+
 
 // ---- Authenticated fetch replacement ----
 export function authFetch(url: string, config = {}) {

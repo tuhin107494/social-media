@@ -6020,3 +6020,16 @@
     margin:0 6px 0 0;
 }
 /*--- chat mobile seetings css end ----*/
+
+/* Fix: Ant Design message popup hidden behind custom UI */
+.ant-message {
+  z-index: 999999 !important;
+  position: fixed !important;
+  top: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.ant-message-notice {
+  z-index: 999999 !important;
+}

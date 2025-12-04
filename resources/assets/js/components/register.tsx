@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Input, Button, Checkbox } from "antd";
+import { Form, Input, Button, Checkbox, message } from "antd";
 import "../../css/bootstrap.min.css";
 import "../../css/common.css";
 import "../../css/main.css";
@@ -24,6 +24,7 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
     const [fieldErrors, setFieldErrors] =
         React.useState<Record<string, string>>({});
 
+    const [form] = Form.useForm();
     const onFinish = async (values: {
         email: string;
         password: string;
@@ -40,16 +41,24 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
             const user = await registerUser(values);
             onLogin(user);
         } catch (err: any) {
-            if (err?.errors) {
-                const mapped: Record<string, string> = {};
-                Object.entries(err.errors).forEach(([k, v]) => {
-                    mapped[k] = Array.isArray(v) ? v[0] : (v as string);
-                });
-                setFieldErrors(mapped);
-            }
-            setError(err?.message || "Registration failed");
-        } finally {
             setLoading(false);
+            // Log for debugging
+            const responseData = err.errors;
+
+            if (responseData) {
+
+                const backendErrors = responseData;
+
+                const fields = Object.keys(backendErrors).map((field) => ({
+                    name: field,
+                    errors: backendErrors[field], // array of messages
+                }));
+
+                form.setFields(fields); // <-- this shows messages under each respective field
+            } else {
+                // Generic error
+                message.error(err.error.message || err.message || "Something went wrong!");
+            }
         }
     };
 
@@ -112,13 +121,13 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
                                 </div>
 
                                 {/* Registration Form */}
-                                <Form layout="vertical" onFinish={onFinish} className="_social_registration_form">
+                                <Form form={form} layout="vertical" onFinish={onFinish} className="_social_registration_form">
                                     <Form.Item
                                         label="First Name"
                                         name="first_name"
                                         rules={[
                                             { required: true, message: "First name is required!" },
-                                            {min: 3, message: "First name must be at least 3 characters"}
+                                            { min: 3, message: "First name must be at least 3 characters" }
                                         ]}
                                     >
                                         <Input className="_social_login_input" size="large" />
@@ -128,7 +137,7 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
                                         name="last_name"
                                         rules={[
                                             { required: true, message: "Last name is required!" },
-                                            {min: 3, message: "Last name must be at least 3 characters"}
+                                            { min: 3, message: "Last name must be at least 3 characters" }
                                         ]}
                                     >
                                         <Input className="_social_login_input" size="large" />
@@ -141,6 +150,7 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
                                             { required: true, message: "Email is required!" },
                                             { type: "email", message: "Enter a valid email!" },
                                         ]}
+
                                     >
                                         <Input className="_social_registration_input" size="large" />
                                     </Form.Item>
