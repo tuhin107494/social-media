@@ -118,6 +118,7 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
                                         name="first_name"
                                         rules={[
                                             { required: true, message: "First name is required!" },
+                                            {min: 3, message: "First name must be at least 3 characters"}
                                         ]}
                                     >
                                         <Input className="_social_login_input" size="large" />
@@ -127,6 +128,7 @@ const Register = ({ onLogin, onNavigateToLogin }) => {
                                         name="last_name"
                                         rules={[
                                             { required: true, message: "Last name is required!" },
+                                            {min: 3, message: "Last name must be at least 3 characters"}
                                         ]}
                                     >
                                         <Input className="_social_login_input" size="large" />

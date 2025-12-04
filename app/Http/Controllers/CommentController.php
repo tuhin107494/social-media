@@ -24,6 +24,7 @@ class CommentController extends Controller
             'body' => $request->body,
             'parent_id' => $request->parent_id,
             'image_path' => $filePaths ? json_encode($filePaths) : null,
+            'likes_count' => 0,
         ]);
 
        return new CommentResource($comment->load('user', 'children.user'));

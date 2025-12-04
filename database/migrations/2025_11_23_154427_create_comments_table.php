@@ -13,6 +13,7 @@ class CreateCommentsTable extends Migration
             $table->foreignId('post_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('parent_id')->nullable()->index(); // threaded comments
+            $table->unsignedBigInteger('likes_count')->default(0);
             $table->text('body');
             $table->timestamps();
 

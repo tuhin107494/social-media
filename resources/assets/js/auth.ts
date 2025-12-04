@@ -1,5 +1,6 @@
 import axios from "axios";
 import { User } from "./types";
+import { message } from "antd";
 
 const SESSION_KEY = "app_user_session_v1";
 
@@ -55,7 +56,9 @@ function extractError(err: any) {
 
 // ---- Auth functions ----
 export async function loginUser(email: string, password: string): Promise<User> {
+    
     try {
+        
         const { data } = await api.post("/login", { email, password });
 
         // Token can be returned under various keys depending on server config

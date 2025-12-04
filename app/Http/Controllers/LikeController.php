@@ -1,33 +1,35 @@
 <?php
 namespace App\Http\Controllers;
 
+
 use App\Models\Post;
 use App\Models\Comment;
 use App\Jobs\ToggleLikeJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
+use App\Http\Requests\ToggleLikesRequest;
 
 class LikeController extends Controller
 {
-    public function toggle(Request $request)
+    public function toggle(ToggleLikesRequest $request)
     {
-        $request->validate([
-            'likeable_id' => 'required|integer',
-            'likeable_type' => 'required|string|in:post,comment',
-        ]);
 
+        $data = $request->validated();
         $userId = auth()->id();
 
+        $likeableId = $data['likeable_id'];
+        $likeableType = $data['likeable_type'];
+        
         // Identify target
-        $likeable = $request->likeable_type === 'post'
-            ? Post::findOrFail($request->likeable_id)
-            : Comment::findOrFail($request->likeable_id);
+        $likeable = $likeableType === 'post'
+            ? Post::findOrFail($likeableId)
+            : Comment::findOrFail($likeableId);
 
         $type = $likeable::class;
 
         // Redis keys
-        $likesSetKey = "{$request->likeable_type}:{$likeable->id}:liked_users";
-        $likesCountKey = "{$request->likeable_type}:{$likeable->id}:likes_count";
+        $likesSetKey = "{$likeableType}:{$likeable->id}:liked_users";
+        $likesCountKey = "{$likeableType}:{$likeable->id}:likes_count";
 
         // Ensure counter is initialized in Redis
         Redis::setnx($likesCountKey, $likeable->likes_count);

@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Input, Button, Checkbox } from "antd"; // ✅ Antd imports
+import { Form, Input, Button, Checkbox, Alert, message } from "antd"; // ✅ Antd imports
 import "../../css/bootstrap.min.css";
 import "../../css/common.css";
 import "../../css/main.css";
@@ -19,6 +19,7 @@ import { loginUser } from "../auth";
 
 const Login = ({ onLogin, onNavigateToRegister }) => {
 
+
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
@@ -32,20 +33,28 @@ const Login = ({ onLogin, onNavigateToRegister }) => {
       const user = await loginUser(values.email, values.password);
       onLogin(user);
     } catch (err: any) {
+      // Determine error message
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to login';
+
+      // Show error notification
+      message.error(errorMsg);
+
+      // Set field-specific errors if available
       if (err?.errors) {
         const mapped: Record<string, string> = {};
         Object.entries(err.errors).forEach(([k, v]) => {
           mapped[k] = Array.isArray(v) ? v[0] : (v as string);
         });
         setFieldErrors(mapped);
-        setError(err.message || 'Validation error');
-      } else {
-        setError(err?.message || 'Failed to login');
       }
+
+      // Set general error message
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <section className="_social_login_wrapper _layout_main_wrapper">
@@ -101,13 +110,14 @@ const Login = ({ onLogin, onNavigateToRegister }) => {
                   <span>Or</span>
                 </div>
 
+
                 <Form
                   layout="vertical"
                   onFinish={onFinish}
                   className="_social_login_form"
                   initialValues={{ remember: true }}
                 >
-                 
+
                   <Form.Item
                     label="Email"
                     name="email"
@@ -115,6 +125,7 @@ const Login = ({ onLogin, onNavigateToRegister }) => {
                       { required: true, message: "Email is required!" },
                       { type: "email", message: "Enter a valid email!" },
                     ]}
+
                   >
                     <Input className="_social_login_input" size="large" />
                   </Form.Item>
@@ -122,7 +133,12 @@ const Login = ({ onLogin, onNavigateToRegister }) => {
                   <Form.Item
                     label="Password"
                     name="password"
-                    rules={[{ required: true, message: "Password is required!" }]}
+                    rules={[
+                      { required: true, message: "Password is required!" },
+                      { min: 6, message: "Password must be at least 6 characters" },
+
+                    ]}
+
                   >
                     <Input.Password className="_social_login_input" size="large" />
                   </Form.Item>
@@ -154,7 +170,7 @@ const Login = ({ onLogin, onNavigateToRegister }) => {
 
                 <div className="_social_login_bottom_txt">
                   <p className="_social_login_bottom_txt_para">
-                    Don’t have an account? <a  onClick={onNavigateToRegister}>Create New Account</a>
+                    Don’t have an account? <a onClick={onNavigateToRegister} style={{color:"#1890ff"}}>Create New Account</a>
                   </p>
                 </div>
 
