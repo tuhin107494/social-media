@@ -1,5 +1,6 @@
 import axios from "axios";
 import { User } from "./types";
+import { message } from "antd";
 
 const SESSION_KEY = "app_user_session_v1";
 
@@ -55,7 +56,9 @@ function extractError(err: any) {
 
 // ---- Auth functions ----
 export async function loginUser(email: string, password: string): Promise<User> {
+    
     try {
+        
         const { data } = await api.post("/login", { email, password });
 
         // Token can be returned under various keys depending on server config
@@ -72,7 +75,7 @@ export async function loginUser(email: string, password: string): Promise<User> 
         saveSession(user);
         return user;
     } catch (err: any) {
-        throw new Error(extractError(err));
+        throw err;
     }
 }
 
@@ -99,9 +102,20 @@ export async function registerUser(payload: {
         saveSession(user);
         return user;
     } catch (err: any) {
-        throw new Error(extractError(err));
+        // Instead of new Error, throw structured object
+        if (err.response?.status === 422) {
+            throw {
+                message: err.response.data?.message || "Validation Failed",
+                errors: err.response.data?.errors || {},
+            };
+        }
+        throw {
+            message: err.message || "Something went wrong",
+            errors: {},
+        };
     }
 }
+
 
 // ---- Authenticated fetch replacement ----
 export function authFetch(url: string, config = {}) {

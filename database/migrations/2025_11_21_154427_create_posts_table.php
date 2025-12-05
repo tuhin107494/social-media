@@ -14,6 +14,8 @@ class CreatePostsTable extends Migration
             $table->text('body')->nullable();
             $table->string('image_path')->nullable(); // optional image
             $table->boolean('is_public')->default(true);
+            $table->unsignedBigInteger('likes_count')->default(0);
+            $table->unsignedBigInteger('comments_count')->default(0);
             $table->timestamps();
         });
     }

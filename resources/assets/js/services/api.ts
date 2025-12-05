@@ -93,9 +93,9 @@ export async function privacyChange(postId: string, isPublic: boolean) {
   }
 }
 
-export async function likeToggle(likeable_id, likeable_type_id) {
+export async function likeToggle(likeable_id, likeable_type) {
   try {
-    const res = await authFetch(`/likes`, { method: 'post', data: { likeable_id: likeable_id, likeable_type_id: likeable_type_id } });
+    const res = await authFetch(`/likes`, { method: 'post', data: { likeable_id: likeable_id, likeable_type: likeable_type } });
     return res.data;
   } catch (e) {
     console.warn('like failed (mock)', e);
