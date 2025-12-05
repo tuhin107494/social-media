@@ -95,6 +95,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
                                         {/* feed area */}
                                         {posts.length > 0 && (
                                             <PostCard
+                                                currentUser={currentUser}
                                                 posts={posts}
                                                 setPosts={setPosts}
 

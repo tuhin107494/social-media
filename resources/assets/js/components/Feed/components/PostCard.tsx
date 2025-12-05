@@ -24,7 +24,7 @@ type Post = {
     comments: number;
 };
 
-const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStateAction<Post[]>> }> = ({ posts, setPosts }) => {
+const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStateAction<Post[]>>, currentUser: User | null }> = ({ posts, setPosts, currentUser }) => {
     const [open, setOpen] = useState(false);
     const [reaction, setReaction] = useState<string | null>(""); // initial reaction state
     const [loading, setLoading] = useState(false);
@@ -110,16 +110,23 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                                 </div>
                                 <div className="_feed_inner_timeline_post_box_txt">
                                     <h4 className="_feed_inner_timeline_post_box_title">{post.author.name}</h4>
-                                    <p className="_feed_inner_timeline_post_box_para">{post.created_at} .
+                                    <p className="_feed_inner_timeline_post_box_para">{post.created_at} . 
                                         {/* <a href="#0">Public</a> */}
+                                       
+                                        {currentUser?.id === post.author?.id ? (
                                         <select
-                                            value={post?.is_public ? "1" : "0"} // "public" or "private"
+                                            value={post?.is_public ? "1" : "0"} // "1" = public, "0" = private
                                             onChange={(e) => handlePrivacyChange(post.id, e.target.value)}
                                             className="_feed_inner_timeline_post_box_para"
                                         >
                                             <option value="1">Public</option>
                                             <option value="0">Private</option>
                                         </select>
+                                        ) : (
+                                        <span className="_feed_inner_timeline_post_box_para">
+                                            {post.is_public ? "Public" : "Private"}
+                                        </span>
+                                        )}
                                     </p>
 
                                 </div>
