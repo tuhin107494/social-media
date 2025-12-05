@@ -35,14 +35,15 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
         setOpenComment(prev => !prev);
     };
 
-    const handleToggle = async (likeable_id, likeable_type) => {
+    const handleLikeToggle = async ($likeable_id, $likeable_type) => {
 
-        const res = await likeToggle(likeable_id, likeable_type);
 
-        if (likeable_type === 'post') { // post
+        console.log('Toggling like for', $likeable_type, 'with ID', $likeable_id);
+        const res = await likeToggle($likeable_id, $likeable_type);
+        if ($likeable_type === 'post') { // post
             setPosts(prevPosts =>
                 prevPosts.map(post =>
-                    post.id === likeable_id
+                    post.id === $likeable_id
                         ? {
                             ...post,
                             liked: res?.liked,
@@ -51,8 +52,21 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                         : post
                 )
             );
-        } else {
-
+        } else if ($likeable_type === 'comment') {
+            setPosts(prevPosts =>
+                prevPosts.map(post => ({
+                    ...post,
+                    comments: post.comments.map(comment =>
+                        comment.id === $likeable_id
+                            ? {
+                                ...comment,
+                                liked: res?.liked,
+                                likes_count: res?.likes_count,
+                            }
+                            : comment
+                    )
+                }))
+            );
         }
 
     };
@@ -210,7 +224,7 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                     <div className="_feed_inner_timeline_reaction">
                         <button
                             className="_feed_inner_timeline_reaction_emoji _feed_reaction _feed_reaction_active"
-                            onClick={() => handleToggle(post?.id, 'post')}
+                            onClick={() => handleLikeToggle(post?.id, 'post')}
                             style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -266,7 +280,7 @@ const PostCard: React.FC<{ posts: Post[], setPosts: React.Dispatch<React.SetStat
                         </button>
                     </div>
 
-                    <PostComments post={post} openMainCommentBox={openComment} />
+                    <PostComments post={post} openMainCommentBox={openComment} handleLikeToggle={handleLikeToggle} />
                 </div>
             ))}
         </>

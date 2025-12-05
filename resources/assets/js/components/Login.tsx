@@ -139,15 +139,6 @@ const Login = ({ onLogin, onNavigateToRegister }) => {
                   className="_social_login_form"
                   initialValues={{ remember: true }}
                 >
-                  {errorMessage && (
-                    <Alert
-                      message={errorMessage}
-                      type="error"
-                      showIcon
-                      closable
-                      style={{ marginBottom: "16px" }}
-                    />
-                  )}
 
                   {/* Email */}
                   <Form.Item

@@ -51,7 +51,7 @@ class LikeController extends Controller
             ToggleLikeJob::dispatchAfterResponse($likeable, $userId, true); // DB update
             $liked = true;
         }
-
+        
         return response()->json([
             'liked' => $liked,
             'likes_count' => Redis::get($likesCountKey),

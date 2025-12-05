@@ -23,6 +23,8 @@ class CommentResource extends JsonResource
             ],
             'children' => CommentResource::collection($this->children),
             'created_at' => $this->created_at->diffForHumans(),
+            'likes_count' => $this->likes_count,
+            'liked' => $this->likes()->where('user_id', auth()->id())->exists(),
             
         ];
     }

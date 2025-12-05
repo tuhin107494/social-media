@@ -3,7 +3,7 @@ import txtImg from "../../../../images/txt_img.png";
 import commentImg from "../../../../images/comment_img.png";
 import { addComment } from "../../../services/api";
 
-const PostComments = ({ post, openMainCommentBox }) => {
+const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
   const [comments, setComments] = useState([]);
   const [showCommentBox, setShowCommentBox] = useState(false); // toggle main comment box
   const [newComment, setNewComment] = useState("");
@@ -114,6 +114,7 @@ const PostComments = ({ post, openMainCommentBox }) => {
           comment={comment}
           postId={post.id}
           handleCommentSubmit={handleCommentSubmit}
+          handleLikeToggle={handleLikeToggle}
         />
       ))}
     </div>
@@ -121,7 +122,7 @@ const PostComments = ({ post, openMainCommentBox }) => {
 };
 
 // Single Comment Component (reply logic stays the same)
-const Comment = ({ comment, postId, handleCommentSubmit }) => {
+const Comment = ({ comment, postId, handleCommentSubmit, handleLikeToggle }) => {
   const [showReply, setShowReply] = useState(false);
   const [replyText, setReplyText] = useState("");
 
@@ -145,15 +146,18 @@ const Comment = ({ comment, postId, handleCommentSubmit }) => {
           <div className="_comment_status">
             <p className="_comment_status_text">{comment?.body}</p>
           </div>
-          {/* <div className="_total_reactions">
-            <span className="_reaction_like">👍</span>
-            <span className="_reaction_heart">❤️</span>
-            <span className="_total">{comment.likes_count || 0}</span>
-          </div> */}
           <div className="_comment_reply">
             <ul className="_comment_reply_list">
               <li>
-                <span>Like.</span>
+                {comment.likes_count &&
+                  <span>{comment.likes_count || 0}{" "}</span>
+                }
+                <span
+                  onClick={() => handleLikeToggle(comment?.id, 'comment')}
+                  style={{ color: comment?.liked ? "blue" : "black", cursor: "pointer" }}
+                >
+                  Like.
+                </span>
               </li>
               <li>
                 <span onClick={() => setShowReply(!showReply)}>Reply.</span>
@@ -197,6 +201,7 @@ const Comment = ({ comment, postId, handleCommentSubmit }) => {
                 comment={child}
                 postId={postId}
                 handleCommentSubmit={handleCommentSubmit}
+                handleLikeToggle={handleLikeToggle}
               />
             ))}
           </div>

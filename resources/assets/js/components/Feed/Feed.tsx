@@ -6,16 +6,16 @@ import '../../../css/main.css';
 import '../../../css/responsive.css';
 
 // Image imports 
-import FeedLeftSidebar from './components/LeftSidebar';
-import FeedStories from './components/Stories';
+import LeftSidebar from './components/LeftSidebar';
+import Stories from './components/Stories';
 import CreatePostCard from './components/CreatePostCard';
-import FeedPostCard from './components/PostCard';
-import FeedRightSidebar from './components/RightSidebar';
-import FeedNavbar from './components/Navbar';
-import FeedLayoutChange from './components/LayoutChange';
+import PostCard from './components/PostCard';
+import RightSidebar from './components/RightSidebar';
+import Navbar from './components/Navbar';
+import LayoutChange from './components/LayoutChange';
 
 import { User } from '../../types';
-import { createPost, getPosts } from '../../services/api';
+import { createPost, getPosts, likeToggle } from '../../services/api';
 import { Post } from '../../types';
 
 const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ currentUser, onLogout }) => {
@@ -24,7 +24,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
     const [posts, setPosts] = useState<Post[]>([]);
 
     useEffect(() => {
-  
+
         let mounted = true;
         (async () => {
             try {
@@ -59,13 +59,13 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
     return (
         <div className="_layout _layout_main_wrapper">
             {/* Switching Btn Start */}
-            <FeedLayoutChange />
+            <LayoutChange />
             {/* Switching Btn End */}
 
             <div className="_main_layout">
                 {/* Navbar */}
 
-                <FeedNavbar
+                <Navbar
                     currentUser={currentUser}
                     onLogout={onLogout}
                 />
@@ -75,7 +75,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
                     <div className="_layout_inner_wrap">
                         <div className="row">
                             {/* Left Sidebar */}
-                            <FeedLeftSidebar />
+                            <LeftSidebar />
                             {/* Left Sidebar end*/}
 
                             {/* Layout Middle */}
@@ -83,7 +83,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
                                 <div className="_layout_middle_wrap">
                                     <div className="_layout_middle_inner">
                                         {/* story area */}
-                                        <FeedStories />
+                                        <Stories />
 
                                         {/*create post area*/}
                                         <CreatePostCard
@@ -94,9 +94,10 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
 
                                         {/* feed area */}
                                         {posts.length > 0 && (
-                                            <FeedPostCard
+                                            <PostCard
                                                 posts={posts}
                                                 setPosts={setPosts}
+
                                             />
                                         )}
                                         {posts.length === 0 && (
@@ -108,7 +109,7 @@ const Feed: React.FC<{ currentUser: User | null; onLogout: () => void }> = ({ cu
                             {/* Layout Middle  end*/}
 
                             {/* Right Sidebar */}
-                            <FeedRightSidebar />
+                            <RightSidebar />
                             {/* Right Sidebar end*/}
                         </div>
 
