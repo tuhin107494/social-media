@@ -17,6 +17,10 @@ class CreatePostsTable extends Migration
             $table->unsignedBigInteger('likes_count')->default(0);
             $table->unsignedBigInteger('comments_count')->default(0);
             $table->timestamps();
+
+            $table->index('user_id');        //  filter posts by user
+            $table->index('is_public');      // for public feed
+            $table->index('created_at');     // for latest/oldest sort (pagination)
         });
     }
 

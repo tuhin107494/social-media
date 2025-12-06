@@ -16,6 +16,10 @@ return new class extends Migration {
             $table->foreignId('like_type_id')->nullable()->constrained('like_types')->cascadeOnDelete(); // reference to like_types
 
             $table->timestamps();
+            
+        
+            $table->index(['likeable_type', 'likeable_id']); 
+            $table->index('like_type_id'); 
 
             $table->unique(['user_id', 'likeable_id', 'likeable_type', 'like_type_id'], 'user_like_unique');
         });
