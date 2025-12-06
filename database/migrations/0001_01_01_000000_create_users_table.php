@@ -22,6 +22,10 @@ return new class extends Migration {
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+            
+            $table->index('last_seen');
+            $table->index('is_verified');
+            $table->index(['first_name', 'last_name']);
         });
     }
 
