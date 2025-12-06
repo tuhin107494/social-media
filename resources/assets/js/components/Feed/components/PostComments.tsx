@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from "react";
 import txtImg from "../../../../images/txt_img.png";
 import commentImg from "../../../../images/comment_img.png";
-import { addComment, getParentComments, getReplies } from "../../../services/api";
+import { addComment, getParentComments, getReplies, likeToggle } from "../../../services/api";
 
-const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
+const PostComments = ({ post, openMainCommentBox }) => {
   const [comments, setComments] = useState([]); // top-level comments
   const [lastParentId, setLastParentId] = useState(null);
   const [loadingParents, setLoadingParents] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
+const handleLikeToggle = async (likeable_id, likeable_type) => {
+  console.log('Toggling like for', likeable_type, 'with ID', likeable_id);
+  const res = await likeToggle(likeable_id, likeable_type);
+  if (!res) return;
+
+  // Recursive function to update nested comments/replies
+  const updateComments = (commentsList) => {
+    return commentsList.map((comment) => {
+      if (comment.id === likeable_id && likeable_type === "comment") {
+        return { ...comment, liked: res.liked, likes_count: res.likes_count };
+      } else if (comment.replies?.length) {
+        return { ...comment, replies: updateComments(comment.replies) };
+      }
+      return comment;
+    });
+  };
+
+  setComments((prev) => updateComments(prev));
+};
+
 
   const fetchParents = async () => {
     if (loadingParents) return;
@@ -37,7 +58,8 @@ const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
     if (!res) return;
 
     if (!parentId) {
-      setComments((prev) => [{ ...res, replies: [], showReplies: false, lastReplyId: null }, ...prev]);
+      
+      setComments((prev) => [{ ...res.data, replies: [], showReplies: false, lastReplyId: null }, ...prev]);
     } else {
       setComments((prev) =>
         prev.map((c) =>
@@ -48,7 +70,7 @@ const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
       );
     }
     return res;
-    
+
   };
 
   const handleMainSubmit = async (e) => {
@@ -145,21 +167,21 @@ const Comment = ({ comment, postId, handleCommentSubmit, handleLikeToggle }) => 
   const handleReplySubmit = async (e) => {
     e.preventDefault();
     const topLevelId = comment.parent_id ?? comment.id;
-    
-   const  res = await handleCommentSubmit(postId, topLevelId, replyText);
-   console.log(res.data.id);
-   if (res) {
 
-    setReplyText("");
-    setShowReplyBox(false);
-    setReplies((prev) => {
-      return [...prev, res.data];
-    });
-    setLastReplyId(res.data.id);
-    // fetchReplies();
+    const res = await handleCommentSubmit(postId, topLevelId, replyText);
+    console.log(res.data.id);
+    if (res) {
 
-  }
-};
+      setReplyText("");
+      setShowReplyBox(false);
+      setReplies((prev) => {
+        return [...prev, res.data];
+      });
+      setLastReplyId(res.data.id);
+      // fetchReplies();
+
+    }
+  };
 
   return (
     <div className="_comment_main" style={{ marginLeft: comment.parent_id ? 20 : 0 }}>
@@ -197,7 +219,7 @@ const Comment = ({ comment, postId, handleCommentSubmit, handleLikeToggle }) => 
                     }}
                     style={{ cursor: "pointer", color: "#1580b2" }}
                   >
-                    View Replies 
+                    View Replies
                   </span>
                 </li>
               )}
