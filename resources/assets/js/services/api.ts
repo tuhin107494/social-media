@@ -124,4 +124,25 @@ export async function createStory(user: User, imageData: string) {
   }
 }
 
+export const getParentComments = async (postId, lastId = null) => {
+  const params = {};
+  if (lastId) params.last_id = lastId;
+
+  const response = await authFetch(`/posts/${postId}/comments/parents`, { params });
+  return response.data; // array of CommentResource
+};
+
+/**
+ * Fetch replies for a parent comment with cursor pagination
+ * @param {number} commentId
+ * @param {number|null} lastId
+ */
+export const getReplies = async (commentId, lastId = null) => {
+  const params = {};
+  if (lastId) params.last_id = lastId;
+
+  const response = await authFetch(`/comments/${commentId}/replies`, { params });
+  return response.data; // array of CommentResource
+};
+
 export default { getPosts, getAllUsers, getStories, createPost, toggleLikePost, addComment, createStory };

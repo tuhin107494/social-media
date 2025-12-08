@@ -30,7 +30,7 @@ class Comment extends Model
     // children replies
     public function children()
     {
-        return $this->hasMany(Comment::class, 'parent_id')->latest();
+        return $this->hasMany(Comment::class, 'parent_id');
     }
 
     public function likes()

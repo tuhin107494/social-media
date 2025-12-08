@@ -10,6 +10,41 @@ use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
+    
+    public function parentComments(Request $request, Post $post)
+    {
+        $lastId = $request->query('last_id');
+
+        $query = $post->comments()
+            ->whereNull('parent_id')
+            ->withCount('children', 'likes')
+            ->with('user');
+
+        if ($lastId) {
+            $query->where('id', '<', $lastId);
+        }
+
+        $comments = $query->latest()->limit(10)->get();
+
+        return CommentResource::collection($comments);
+    }
+
+    public function replies(Request $request, Comment $comment)
+    {
+        $perPage = 5;
+        $lastId = $request->query('last_id');
+       
+        $query = $comment->children();
+
+        if ($lastId) $query->where('id', '>', $lastId);
+
+        $replies = $query->with('user')->limit($perPage)->get();
+
+        return response()->json([
+            'data' => CommentResource::collection($replies),
+            'next_cursor' => $replies->last()?->id
+        ]);
+    }
     public function store(Request $request, Post $post)
     {
         $request->validate([
@@ -27,7 +62,7 @@ class CommentController extends Controller
             'likes_count' => 0,
         ]);
 
-       return new CommentResource($comment->load('user', 'children.user'));
+       return new CommentResource($comment->load('user'));
     }
 
     public function update(Request $request, Comment $comment)

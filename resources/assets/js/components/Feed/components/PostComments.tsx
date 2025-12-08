@@ -1,56 +1,76 @@
 import React, { useState, useEffect } from "react";
 import txtImg from "../../../../images/txt_img.png";
 import commentImg from "../../../../images/comment_img.png";
-import { addComment } from "../../../services/api";
+import { addComment, getParentComments, getReplies, likeToggle } from "../../../services/api";
 
-const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
-  const [comments, setComments] = useState([]);
-  const [showCommentBox, setShowCommentBox] = useState(false); // toggle main comment box
+const PostComments = ({ post, openMainCommentBox }) => {
+  const [comments, setComments] = useState([]); // top-level comments
+  const [lastParentId, setLastParentId] = useState(null);
+  const [loadingParents, setLoadingParents] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
+const handleLikeToggle = async (likeable_id, likeable_type) => {
+  console.log('Toggling like for', likeable_type, 'with ID', likeable_id);
+  const res = await likeToggle(likeable_id, likeable_type);
+  if (!res) return;
+
+  // Recursive function to update nested comments/replies
+  const updateComments = (commentsList) => {
+    return commentsList.map((comment) => {
+      if (comment.id === likeable_id && likeable_type === "comment") {
+        return { ...comment, liked: res.liked, likes_count: res.likes_count };
+      } else if (comment.replies?.length) {
+        return { ...comment, replies: updateComments(comment.replies) };
+      }
+      return comment;
+    });
+  };
+
+  setComments((prev) => updateComments(prev));
+};
+
+
+  const fetchParents = async () => {
+    if (loadingParents) return;
+    setLoadingParents(true);
+    const res = await getParentComments(post.id, lastParentId);
+    if (res && res.data?.length) {
+      setComments((prev) => {
+        const unique = res.data.filter(c => !prev.some(p => p.id === c.id));
+        return [...prev, ...unique];
+      });
+      setLastParentId(res.data[res.data.length - 1].id);
+    }
+    setLoadingParents(false);
+  };
+
   useEffect(() => {
-    setComments(buildTree(post.comments));
-  }, [post]);
+    setComments([]);
+    setLastParentId(null);
+    fetchParents();
+  }, [post.id]);
 
   const handleCommentSubmit = async (postId, parentId, body, file = null) => {
     if (!body.trim() && !file) return;
 
     const res = await addComment(postId, body, parentId, file);
-    const newComment = res.data;
+    if (!res) return;
 
     if (!parentId) {
-      setComments((prev) => [...prev, { ...newComment, children: [] }]);
+      
+      setComments((prev) => [{ ...res.data, replies: [], showReplies: false, lastReplyId: null }, ...prev]);
     } else {
       setComments((prev) =>
-        addChildComment(prev, parentId, { ...newComment, children: [] })
+        prev.map((c) =>
+          c.id === parentId
+            ? { ...c, replies: [...(c.replies || []), res] }
+            : c
+        )
       );
     }
-  };
+    return res;
 
-  const buildTree = (comments) => {
-    const map = {};
-    comments.forEach((c) => (map[c.id] = { ...c, children: [] }));
-    const tree = [];
-    comments.forEach((c) => {
-      if (c.parent_id) {
-        if (map[c.parent_id]) map[c.parent_id].children.push(map[c.id]);
-      } else {
-        tree.push(map[c.id]);
-      }
-    });
-    return tree;
-  };
-
-  const addChildComment = (list, parentId, newComment) => {
-    return list.map((comment) => {
-      if (comment.id === parentId) {
-        return { ...comment, children: [...(comment.children || []), newComment] };
-      } else if (comment.children) {
-        return { ...comment, children: addChildComment(comment.children, parentId, newComment) };
-      }
-      return comment;
-    });
   };
 
   const handleMainSubmit = async (e) => {
@@ -58,14 +78,10 @@ const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
     await handleCommentSubmit(post.id, null, newComment, file);
     setNewComment("");
     setFile(null);
-    setShowCommentBox(false); // close after submitting
   };
 
   return (
     <div className="_timline_comment_main">
-      {/* Button to open comment box */}
-
-      {/* MAIN COMMENT BOX */}
       {openMainCommentBox && (
         <div className="_feed_inner_timeline_cooment_area">
           <div className="_feed_inner_comment_box">
@@ -91,15 +107,10 @@ const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
                     hidden
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
                   />
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-                    <path fill="#00000075" d="M3 4L5 2h6l2 2h2v10H1V4z" />
-                    <circle cx="8" cy="9" r="3" fill="#00000075" />
-                  </svg>
+                  📎
                 </label>
                 <button type="submit" className="_feed_inner_comment_box_icon_btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-                    <path fill="#1580b2ff" d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
-                  </svg>
+                  Post
                 </button>
               </div>
             </form>
@@ -107,34 +118,73 @@ const PostComments = ({ post, openMainCommentBox, handleLikeToggle }) => {
         </div>
       )}
 
-      {/* COMMENTS LIST */}
       {comments.map((comment) => (
         <Comment
           key={comment.id}
           comment={comment}
           postId={post.id}
-          handleCommentSubmit={handleCommentSubmit}
           handleLikeToggle={handleLikeToggle}
+          handleCommentSubmit={handleCommentSubmit}
         />
       ))}
+
+      {lastParentId && (
+        <button disabled={loadingParents} onClick={fetchParents}>
+          {loadingParents ? "Loading..." : "Load more comments"}
+        </button>
+      )}
     </div>
   );
 };
 
-// Single Comment Component (reply logic stays the same)
 const Comment = ({ comment, postId, handleCommentSubmit, handleLikeToggle }) => {
-  const [showReply, setShowReply] = useState(false);
+  const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [replies, setReplies] = useState([]);
+  const [lastReplyId, setLastReplyId] = useState(null);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
 
-  const handleReplySubmit = (e) => {
+  const fetchReplies = async (loadMore = false) => {
+    if (loadingReplies) return;
+    setLoadingReplies(true);
+
+    const topLevelId = comment.parent_id ?? comment.id;
+    console.log("Fetching replies for topLevelId:", topLevelId, "lastReplyId:", lastReplyId);
+    const res = await getReplies(topLevelId, lastReplyId); // backend should support lastReplyId for pagination
+
+    if (res && res.data?.length) {
+      setReplies((prev) => {
+        const unique = res.data.filter(r => !prev.some(p => p.id === r.id));
+        return loadMore ? [...prev, ...unique] : unique;
+      });
+      setLastReplyId(res.data[res.data.length - 1].id);
+    }
+
+    setLoadingReplies(false);
+  };
+
+  const handleReplySubmit = async (e) => {
     e.preventDefault();
-    handleCommentSubmit(postId, comment.id, replyText);
-    setReplyText("");
-    setShowReply(false);
+    const topLevelId = comment.parent_id ?? comment.id;
+
+    const res = await handleCommentSubmit(postId, topLevelId, replyText);
+    console.log(res.data.id);
+    if (res) {
+
+      setReplyText("");
+      setShowReplyBox(false);
+      setReplies((prev) => {
+        return [...prev, res.data];
+      });
+      setLastReplyId(res.data.id);
+      // fetchReplies();
+
+    }
   };
 
   return (
-    <div className="_comment_main">
+    <div className="_comment_main" style={{ marginLeft: comment.parent_id ? 20 : 0 }}>
       <div className="_comment_image">
         <img src={txtImg} alt="" className="_comment_img1" />
       </div>
@@ -149,63 +199,66 @@ const Comment = ({ comment, postId, handleCommentSubmit, handleLikeToggle }) => 
           <div className="_comment_reply">
             <ul className="_comment_reply_list">
               <li>
-                {comment.likes_count &&
-                  <span>{comment.likes_count || 0}{" "}</span>
-                }
+                {comment.likes_count && <span>{comment.likes_count} </span>}
                 <span
-                  onClick={() => handleLikeToggle(comment?.id, 'comment')}
-                  style={{ color: comment?.liked ? "blue" : "black", cursor: "pointer" }}
+                  onClick={() => handleLikeToggle(comment.id, "comment")}
+                  style={{ color: comment.liked ? "blue" : "black", cursor: "pointer" }}
                 >
                   Like.
                 </span>
               </li>
               <li>
-                <span onClick={() => setShowReply(!showReply)}>Reply.</span>
+                <span onClick={() => setShowReplyBox(!showReplyBox)}>Reply.</span>
               </li>
+              {!comment.parent_id && !showReplies && (
+                <li>
+                  <span
+                    onClick={async () => {
+                      setShowReplies(true);
+                      fetchReplies();
+                    }}
+                    style={{ cursor: "pointer", color: "#1580b2" }}
+                  >
+                    View Replies
+                  </span>
+                </li>
+              )}
             </ul>
           </div>
-        </div>
 
-        {/* Reply Box */}
-        {showReply && (
-          <div className="_feed_inner_comment_box" style={{ marginTop: "10px" }}>
-            <form className="_feed_inner_comment_box_form" onSubmit={handleReplySubmit}>
-              <div className="_feed_inner_comment_box_content">
-                <div className="_feed_inner_comment_box_content_image">
-                  <img src={commentImg} alt="" className="_comment_img" />
-                </div>
-                <div className="_feed_inner_comment_box_content_txt">
-                  <textarea
-                    className="form-control _comment_textarea"
-                    placeholder="Write a reply"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="_feed_inner_comment_box_icon">
-                <button className="_feed_inner_comment_box_icon_btn" type="submit">
-                  Post
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
+          {showReplyBox && (
+            <div className="_feed_inner_comment_box" style={{ marginTop: "10px" }}>
+              <form className="_feed_inner_comment_box_form" onSubmit={handleReplySubmit}>
+                <textarea
+                  className="form-control _comment_textarea"
+                  placeholder="Write a reply"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                />
+                <button type="submit">Post</button>
+              </form>
+            </div>
+          )}
 
-        {/* Nested Replies */}
-        {comment.children && comment.children.length > 0 && (
-          <div style={{ marginLeft: "20px" }}>
-            {comment.children.map((child) => (
+          {/* Replies List */}
+          {showReplies &&
+            replies.map((r) => (
               <Comment
-                key={child.id}
-                comment={child}
+                key={r.id}
+                comment={r}
                 postId={postId}
                 handleCommentSubmit={handleCommentSubmit}
                 handleLikeToggle={handleLikeToggle}
               />
             ))}
-          </div>
-        )}
+
+          {/* Load more replies button */}
+          {showReplies && lastReplyId && (
+            <button onClick={() => fetchReplies(true)} disabled={loadingReplies}>
+              {loadingReplies ? "Loading..." : "Load more replies"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

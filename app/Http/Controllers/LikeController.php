@@ -13,6 +13,7 @@ class LikeController extends Controller
 {
     public function toggle(ToggleLikesRequest $request)
     {
+        
 
         $data = $request->validated();
         $userId = auth()->id();

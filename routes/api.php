@@ -34,6 +34,11 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('posts.comments', CommentController::class)
         ->shallow()
         ->only(['index', 'store', 'update', 'destroy']);
+    
+    Route::get('/posts/{post}/comments/parents', [CommentController::class, 'parentComments']);
+
+    // Replies inside comments
+    Route::get('comments/{comment}/replies', [CommentController::class, 'replies']);
 
     // Likes
     Route::post('likes', [LikeController::class, 'toggle']);
