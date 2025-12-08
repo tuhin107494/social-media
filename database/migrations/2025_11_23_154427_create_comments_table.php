@@ -19,6 +19,9 @@ class CreateCommentsTable extends Migration
 
             // optional self FK for parent (not required but helpful)
             $table->foreign('parent_id')->references('id')->on('comments')->nullOnDelete();
+            
+               // important for pagination
+            $table->index(['post_id', 'id']);
         });
     }
 
